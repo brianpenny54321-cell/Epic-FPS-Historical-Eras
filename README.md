@@ -24,3 +24,5 @@ Use Node.js 20+ and run `npm run dev`, then open http://localhost:8080.
 `npm test` runs smoke/regression checks. `npm run build` creates the static site in `dist/`.
 
 The game is an original stylized prototype; historical settings are fictionalized and non-documentary.
+
+<!-- GitHub Pages deployment workflow is configured in .github/workflows/pages.yml. -->
