@@ -33,6 +33,8 @@ jobs:
         run: test -s dist/index.html && test -s dist/src/main.js && test -s dist/src/style.css
       - name: Configure Pages
         uses: actions/configure-pages@v5
+        with:
+          enablement: true
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
