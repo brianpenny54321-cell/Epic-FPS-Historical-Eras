@@ -1,0 +1,3 @@
+import http from 'node:http';import {readFile} from 'node:fs/promises';import {extname,join,normalize} from 'node:path';
+const root=process.cwd();const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css'};
+http.createServer(async(req,res)=>{let p=decodeURIComponent(req.url.split('?')[0]);if(p==='/')p='/index.html';const file=normalize(join(root,p));if(!file.startsWith(root)){res.writeHead(403);return res.end()}try{const data=await readFile(file);res.writeHead(200,{'Content-Type':mime[extname(file)]||'application/octet-stream','Cache-Control':'no-store'});res.end(data)}catch{res.writeHead(404);res.end('Not found')}}).listen(8080,'0.0.0.0',()=>console.log('Dev server on http://127.0.0.1:8080'));
