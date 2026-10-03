@@ -115,4 +115,5 @@ function render(){
  ctx.restore();
 }
 function loop(t){const dt=Math.min(.033,(t-last)/1000);last=t;if(running)update(dt);render();requestAnimationFrame(loop)}hud();requestAnimationFrame(loop);
+window.__flightReady=true;document.querySelector('#preflight')?.remove();
 })();
