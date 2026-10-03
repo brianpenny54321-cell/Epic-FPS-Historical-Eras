@@ -1,1 +1,29 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"><meta name="theme-color" content="#071015"><meta name="description" content="Operation Tidebreaker: a free browser 6DOF combat flight game."><title>Operation Tidebreaker — 6DOF Flight</title><link rel="stylesheet" href="./src/style.css?v=20261003.1"></head><body><div id="app"></div><script src="./src/main.js?v=20261003.1" defer></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<meta name="theme-color" content="#071015">
+<meta name="description" content="Operation Tidebreaker: a free browser 6DOF combat flight game.">
+<title>Operation Tidebreaker — 6DOF Flight</title>
+<style>
+html,body{margin:0;width:100%;height:100%;background:#071015;color:#eaf1ef;font-family:system-ui,-apple-system,sans-serif}
+#preflight{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 65% 40%,#12313a 0,#071015 55%,#03070a 100%);padding:28px}
+#preflight .card{max-width:620px;width:100%;padding:30px;border:1px solid rgba(93,225,255,.25);background:rgba(3,13,18,.82)}
+#preflight .k{font-size:10px;letter-spacing:.25em;color:#5de1ff}
+#preflight h1{font-size:clamp(38px,9vw,76px);line-height:.9;margin:12px 0}
+#preflight h1 span{color:#ffb84d}
+#preflight p{color:#b9c8c8}
+#preflight .load{margin-top:22px;color:#7ddff0;font-size:11px;letter-spacing:.15em}
+#preflight .error{display:none;color:#ffb4a8;font-size:12px;line-height:1.5;margin-top:18px}
+#app{width:100%;height:100%}
+</style>
+<link rel="stylesheet" href="./src/style.css?v=20261003.2">
+</head>
+<body>
+<div id="preflight"><div class="card"><div class="k">PROJECT CHRONOS // MOBILE BUILD</div><h1>OPERATION <span>TIDEBREAKER</span></h1><p>6DOF A-10 combat flight over the Persian Gulf</p><div class="load">LOADING FLIGHT SYSTEMS…</div><div class="error"></div></div></div>
+<div id="app"></div>
+<noscript><div style="position:fixed;inset:0;display:grid;place-items:center;color:white;background:#071015">JavaScript is required to run this game.</div></noscript>
+<script src="./src/main.js?v=20261003.2" defer></script>
+</body>
+</html>
