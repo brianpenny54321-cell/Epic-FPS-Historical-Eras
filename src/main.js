@@ -93,13 +93,17 @@ c.addEventListener('mousemove',e=>{if(running&&!mobile&&document.pointerLockElem
 c.addEventListener('mousedown',e=>{if(e.button===0)fire()});
 function setStick(e){const r=document.querySelector('#stick').getBoundingClientRect(),dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2),m=r.width*.34,d=Math.hypot(dx,dy),k=d>m?m/d:1;input.roll=clamp(dx*k/m,-1,1);input.pitch=clamp(-dy*k/m,-1,1);document.querySelector('#knob').style.transform=`translate(${dx*k}px,${dy*k}px)`}
 const stick=document.querySelector('#stick');stick.onpointerdown=e=>{stickId=e.pointerId;stick.setPointerCapture(e.pointerId);setStick(e)};stick.onpointermove=e=>{if(e.pointerId===stickId)setStick(e)};stick.onpointerup=stick.onpointercancel=()=>{stickId=null;input.roll=input.pitch=0;document.querySelector('#knob').style.transform='translate(0,0)'};
-const look=document.querySelector('#look');look.onpointerdown=e=>{lookId=e.pointerId;lastLookX=e.clientX;look.setPointerCapture(e.pointerId)};look.onpointermove=e=>{if(e.pointerId===lookId){input.yaw=clamp((e.clientX-lastLookX)*.004,-.15,.15);lastLookX=e.clientX}};look.onpointerup=look.onpointercancel=()=>{lookId=null;input.yaw=0};
+const look=document.querySelector('#look');
+look.onpointerdown=e=>{if(!running)return;lookId=e.pointerId;lastLookX=e.clientX;look.setPointerCapture(e.pointerId);look.classList.add('active');e.preventDefault()};
+look.onpointermove=e=>{if(e.pointerId===lookId){input.yaw=clamp((e.clientX-lastLookX)*.012,-.35,.35);lastLookX=e.clientX;e.preventDefault()}};
+look.onpointerup=look.onpointercancel=()=>{lookId=null;input.yaw=0;look.classList.remove('active')};
 function update(dt){
  let pitch=((keys.has('s')?1:0)-(keys.has('w')?1:0));let roll=((keys.has('d')?1:0)-(keys.has('a')?1:0));if(Math.abs(input.pitch)>.01)pitch=input.pitch;if(Math.abs(input.roll)>.01)roll=input.roll;
  p.pitch+=pitch*dt*0.85;p.roll+=roll*dt*1.35;p.yaw+=input.yaw*dt*1.8;
  if(!pitch)p.pitch*=Math.pow(.08,dt);if(!roll)p.roll*=Math.pow(.018,dt);p.pitch=clamp(p.pitch,-.9,.9);p.roll=clamp(p.roll,-1.3,1.3);
  // coordinated yaw from bank, plus deliberate mouse/drag yaw
  p.yaw+=Math.sin(p.roll)*dt*.95;
+ // Keep a small amount of forward momentum visible on the HUD and camera-facing world even when the pilot releases the stick.
  const b=basis(),target=boost?310:210,vel=Math.hypot(p.vx,p.vy,p.vz),acc=target-vel;
  p.vx+=b.f.x*acc*dt*.9;p.vy+=b.f.y*acc*dt*.9;p.vz+=b.f.z*acc*dt*.9;
  p.vx*=Math.pow(.985,dt*60);p.vy*=Math.pow(.985,dt*60);p.vz*=Math.pow(.985,dt*60);
