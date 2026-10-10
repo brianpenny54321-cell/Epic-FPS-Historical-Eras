@@ -1,11 +1,88 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#05080d"><title>Operation Tidebreaker</title>
-<style>
-*{box-sizing:border-box}html,body,#game,#view{margin:0;width:100%;height:100%;overflow:hidden}body{background:#05080d;color:#eef5f7;font-family:system-ui,sans-serif;touch-action:none;user-select:none}#view{display:block}
-#boot{position:fixed;inset:0;z-index:10;background:radial-gradient(circle at 72% 34%,#194454,#09131d 42%,#03060a 80%);overflow:hidden}#boot:after{content:"";position:absolute;inset:0;opacity:.2;background:linear-gradient(rgba(100,230,255,.2) 1px,transparent 1px),linear-gradient(90deg,rgba(100,230,255,.2) 1px,transparent 1px);background-size:55px 55px;transform:perspective(500px) rotateX(58deg) scale(1.7);transform-origin:bottom}
-.copy{position:absolute;z-index:2;left:8vw;top:50%;transform:translateY(-50%)}.eyebrow{font-size:10px;letter-spacing:.32em;color:#65e7ff}.copy h1{font-size:clamp(52px,9vw,120px);line-height:.78;letter-spacing:-.06em;margin:22px 0 28px;text-shadow:0 12px 45px #000}.copy h1 span{color:#ff9e3d}.tag{font-size:12px;letter-spacing:.24em;color:#b8c8ce}.copy button{margin-top:28px;padding:17px 42px;border:0;background:#ff9e3d;color:#091016;font-weight:900;letter-spacing:.16em;cursor:pointer}.note{margin-top:15px;font-size:7px;letter-spacing:.18em;color:#687b84}
-#hud{position:fixed;inset:0;pointer-events:none;text-shadow:0 2px 8px #000}header{position:absolute;top:18px;left:22px;right:22px;display:flex;justify-content:space-between;letter-spacing:.12em}header b{display:block}header small,.mission{font-size:8px;color:#72d8e8}.mission{text-align:right}.objective{position:absolute;top:76px;left:50%;transform:translateX(-50%);text-align:center;border-left:2px solid #65e7ff;background:#031018aa;padding:8px 18px;min-width:280px}.objective span{font-size:7px;color:#65e7ff;letter-spacing:.25em}.objective b{display:block;font-size:10px;margin-top:3px}.objective i{font-style:normal;font-size:7px;color:#9aacb2}.reticle{position:absolute;left:50%;top:50%;width:72px;height:72px;transform:translate(-50%,-50%);border:1px solid #ffb04d;border-radius:50%}.reticle:before,.reticle:after{content:"";position:absolute;background:#ffb04d}.reticle:before{width:102px;height:1px;left:-16px;top:35px}.reticle:after{width:1px;height:102px;left:35px;top:-16px}.reticle b{position:absolute;top:82px;left:50%;transform:translateX(-50%);white-space:nowrap;color:#ffb04d;font-size:7px}.speed{position:absolute;left:22px;bottom:20px;display:flex;align-items:end;gap:7px}.speed small{font-size:7px;color:#72d8e8}.speed>b{font-size:31px}.speed em{font-size:8px;color:#ffb04d;font-style:normal}.weapon{position:absolute;right:22px;bottom:20px;text-align:right}.weapon small{display:block;font-size:7px;color:#72d8e8}.weapon b{font-size:30px}.weapon span{display:block;color:#ffb04d;font-size:7px}.radar{position:absolute;right:22px;top:100px;width:110px;height:110px;border:1px solid #65e7ff66;border-radius:50%;background:#06232c44}.radar span{position:absolute;left:8px;top:6px;color:#65e7ff;font-size:7px}.radar canvas{width:100%;height:100%}.damage{position:absolute;left:50%;bottom:57px;transform:translateX(-50%);width:160px;height:3px;background:#ffffff1c}.damage span{display:block;height:100%;background:#65e7ff}.comms{position:absolute;left:50%;bottom:29px;transform:translateX(-50%);font-size:8px;color:#a9c1c8;white-space:nowrap}.hint{position:absolute;top:18px;left:50%;transform:translateX(-50%);font-size:7px;color:#d9f4f744}.mobile{display:none}
-@media(max-width:760px){.copy{left:24px;right:24px}.copy h1{font-size:53px}.tag{font-size:9px}.copy button{width:100%}.mission,.hint{display:none}.objective{top:62px;min-width:250px}.radar{right:12px;top:98px;width:82px;height:82px}.speed{left:12px;bottom:14px}.speed>b{font-size:24px}.weapon{right:12px;bottom:14px}.weapon b{font-size:24px}.comms{bottom:35px;font-size:6px}.mobile{display:block}.mobile #stick{position:absolute;left:16px;bottom:70px;width:130px;height:130px;border:1px solid #65e7ff55;border-radius:50%;pointer-events:auto;background:#00101833}.mobile #stick i{position:absolute;width:46px;height:46px;left:41px;top:41px;border:1px solid #65e7ff;border-radius:50%;background:#65e7ff22}.mobile #look{position:absolute;right:0;bottom:50px;width:52%;height:42%;padding-top:65px;text-align:center;color:#d9f4f744;font-size:7px;pointer-events:auto}.mobile button{position:absolute;right:14px;width:72px;height:42px;background:#071219dd;border:1px solid #ff9e3d99;color:#ffbd70;font-weight:800;font-size:7px;pointer-events:auto}.mobile #fire{bottom:105px}.mobile #missile{bottom:56px;color:#7de8ff;border-color:#65e7ff99}}
-</style></head><body>
-<div id="boot"><div class="copy"><div class="eyebrow">TASK FORCE TIDEBREAKER // FLIGHT SYSTEMS</div><h1>OPERATION<br><span>TIDEBREAKER</span></h1><div class="tag">CINEMATIC ARCADE COMBAT FLIGHT</div><button id="start">START MISSION</button><div class="note">ORIGINAL PROTOTYPE // FREE-TO-USE PROCEDURAL ASSETS</div></div></div>
-<div id="game" hidden><canvas id="view"></canvas><div id="hud"><header><div><b>TIDEBREAKER</b><small>JOINT STRIKE GROUP // SECTOR 07</small></div><div class="mission">MISSION 01 <strong>FIRST LIGHT</strong></div></header><div class="objective"><span>PRIMARY</span><b id="objective">DESTROY HOSTILE RAIDERS</b><i id="status">3 HOSTILES REMAIN</i></div><div class="reticle"><b id="lock">NO LOCK</b></div><div class="speed"><small>AIRSPEED</small><b id="spd">420</b><em>KT</em><small>ALT <b id="alt">2400</b> FT</small></div><div class="weapon"><small>GUN // 30MM</small><b id="ammo">120</b><span id="weapon">READY</span></div><div class="radar"><span>RDR</span><canvas id="radar"></canvas></div><div class="damage"><span id="damageBar"></span></div><div class="comms" id="comms">AWACS // BANDIT GROUP INBOUND</div><div class="hint">W/S PITCH • A/D ROLL • MOUSE AIM • SPACE BOOST • F FIRE</div><div class="mobile"><div id="stick"><i></i></div><div id="look">LOOK / AIM</div><button id="fire">FIRE</button><button id="missile">FOX-2</button></div></div></div>
-<script type="module" src="./src/main.js?v=rebuild2"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#1a120c">
+  <title>Operation Tidebreaker</title>
+  <link rel="stylesheet" href="./src/style.css?v=rebuild5">
+</head>
+<body>
+  <div id="diag" class="diag" hidden>FLIGHT SYSTEMS</div>
+  <div id="boot" class="boot">
+    <div id="start" class="boot-copy">
+      <p class="eyebrow" id="theater">GULF THEATER · KHARG ISLAND</p>
+      <h1>OPERATION<br><span>TIDEBREAKER</span></h1>
+      <p class="brief">First light over Kharg island. Sink both raiders and the fuel farm in an original TB-10 strike jet — an A-10C Thunderbolt II planform study. Straight wing, twin tails, nose cannon.</p>
+      <button id="fly" type="button">START MISSION</button>
+      <ul class="keys">
+        <li><b>W / S</b> pull up / nose down</li>
+        <li><b>A / D</b> bank left / bank right</li>
+        <li><b>Q / E</b> rudder</li>
+        <li><b>Mouse</b> fine aim after click</li>
+        <li><b>F / click</b> cannon</li>
+        <li><b>R</b> fox-2</li>
+        <li><b>Space</b> burner</li>
+        <li><b>Arrows</b> throttle</li>
+        <li><b>C</b> cockpit</li>
+      </ul>
+      <p class="legal">Original geometry and audio. No licensed game assets.</p>
+    </div>
+    <svg class="silhouette" viewBox="0 0 640 280" aria-hidden="true">
+      <path d="M40 150 H250 L310 146 L470 150 L520 168 L560 150 L600 154 L470 158 L430 190 L400 158 L250 162 L210 210 L160 162 L90 168 Z" fill="#2a241c"/>
+      <path d="M250 146 L300 80 L330 146 Z" fill="#3a3228"/>
+      <path d="M430 150 L470 70 L490 150 Z" fill="#3a3228"/>
+      <circle cx="300" cy="132" r="8" fill="#c9843a"/>
+    </svg>
+  </div>
+  <div id="game" hidden>
+    <canvas id="view"></canvas>
+    <canvas id="ladder"></canvas>
+    <div id="hurt"></div>
+    <div id="hud">
+      <header>
+        <div>
+          <b>TIDEBREAKER</b>
+          <small id="airframe">TB-10 STRIKE</small>
+        </div>
+        <div class="readout"><small>HDG</small><b id="hdg">000</b></div>
+        <div class="mission">MISSION 01 <strong>FIRST LIGHT</strong></div>
+      </header>
+      <div class="objective">
+        <span>PRIMARY</span>
+        <b id="objective">SINK THE RAIDERS AND THE FUEL FARM</b>
+        <i id="status">3 PRIMARY TARGETS</i>
+      </div>
+      <div id="reticle"><b id="lock">NO LOCK</b></div>
+      <div class="speed">
+        <small>AIRSPEED</small>
+        <b id="spd">320</b><em>KT</em>
+        <small>RADAR ALT <b id="alt">400</b> FT</small>
+        <small>AOA <b id="aoa">0</b>°</small>
+      </div>
+      <div class="weapon">
+        <small>CANNON</small>
+        <b id="ammo">420</b>
+        <span id="weapon">READY</span>
+        <small>FOX-2 <b id="missileCount">4</b></small>
+        <small>THR <b id="thr">62</b>%</small>
+      </div>
+      <div class="radar"><span>RDR</span><canvas id="radar"></canvas></div>
+      <div class="damage"><span id="damageBar"></span></div>
+      <div class="comms" id="comms">AWACS // STAND BY</div>
+      <p class="hint">W PULL UP · S NOSE DOWN · A BANK LEFT · D BANK RIGHT · F GUN · R FOX-2 · SPACE BURNER</p>
+      <div id="stick" class="stick"><i id="nub"></i></div>
+      <div id="look" class="mobile-look">RUDDER</div>
+      <button id="fire" class="touch-btn gun" type="button">GUN</button>
+      <button id="missile" class="touch-btn fox" type="button">FOX-2</button>
+    </div>
+    <div id="endcard" class="endcard" hidden>
+      <p class="eyebrow">TASK FORCE TIDEBREAKER</p>
+      <h2 id="endTitle">MISSION COMPLETE</h2>
+      <p id="endText"></p>
+      <button id="refly" type="button">REFLY</button>
+    </div>
+  </div>
+  <script src="./src/main.js?v=rebuild5"></script>
+</body>
+</html>
