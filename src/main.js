@@ -5,6 +5,11 @@
 const AIRFRAME = 'A-10C THUNDERBOLT II';
 const THEATER = 'GULF THEATER';
 const ISLAND_NAME = 'Kharg island';
+const JETS = {
+  strike: { id: 'strike', name: 'TB-10 STRIKE', roll: 1.85, pitch: 0.88, yaw: 0.78, thrust: 1, burner: 1.45, drag: 1, vmax: 360, cruise: 166, hp: 120, ammo: 640, missiles: 4, lock: 0.11, cone: 0.52 },
+  lance: { id: 'lance', name: 'TB-4 LANCE', roll: 2.75, pitch: 1.22, yaw: 0.95, thrust: 1.12, burner: 1.7, drag: 0.9, vmax: 410, cruise: 188, hp: 84, ammo: 300, missiles: 6, lock: 0.06, cone: 0.62 },
+  dart: { id: 'dart', name: 'TB-7 DART', roll: 2.2, pitch: 1.02, yaw: 0.64, thrust: 1.06, burner: 2.15, drag: 0.8, vmax: 490, cruise: 205, hp: 70, ammo: 220, missiles: 4, lock: 0.08, cone: 0.5 }
+};
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
@@ -82,10 +87,12 @@ function quatAim(fwd) {
   const up = norm(cross(right, f));
   return quatFromBasis(right, up, mul(f, -1));
 }
-function integrateAttitude(q, rollCmd, pitchCmd, yawCmd, vmag, dt) {
-  q = qnorm(qmul(q, qaxis(0, 0, 1, rollCmd * 1.9 * dt)));
-  q = qnorm(qmul(q, qaxis(1, 0, 0, pitchCmd * 0.85 * dt)));
-  q = qnorm(qmul(q, qaxis(0, 1, 0, yawCmd * 0.65 * dt)));
+function integrateAttitude(q, rollCmd, pitchCmd, yawCmd, vmag, dt, rates) {
+  const R = rates || { roll: 2.05, pitch: 0.95, yaw: 0.72 };
+  const sp = clamp((vmag - 50) / 120, 0.55, 1.2);
+  q = qnorm(qmul(q, qaxis(0, 0, 1, rollCmd * R.roll * sp * dt)));
+  q = qnorm(qmul(q, qaxis(1, 0, 0, pitchCmd * R.pitch * sp * dt)));
+  q = qnorm(qmul(q, qaxis(0, 1, 0, yawCmd * R.yaw * dt)));
   const roll = basis(q).roll;
   const coord = 1.65 * 9.81 * Math.tan(clamp(roll, -1.05, 1.05)) / Math.max(80, vmag);
   q = qnorm(qmul(qaxis(0, 1, 0, coord * dt), q));
@@ -115,6 +122,8 @@ function createSim() {
     vel: [0, 0, -166],
     throttle: 0.62,
     boost: 0,
+    brake: 0,
+    abFuel: 1,
     hp: 100,
     ammo: 420,
     missiles: 4,
@@ -125,11 +134,24 @@ function createSim() {
 }
 function stepFlight(sim, cmd, dt) {
   if (!sim.alive) return;
-  if (cmd.throttleUp) sim.throttle = Math.min(1, sim.throttle + dt * 0.4);
-  if (cmd.throttleDown) sim.throttle = Math.max(0.28, sim.throttle - dt * 0.4);
-  sim.boost = cmd.boost ? 1 : 0;
+  if (cmd.throttleUp) sim.throttle = Math.min(1, sim.throttle + dt * 0.72);
+  if (cmd.throttleDown) sim.throttle = Math.max(0.18, sim.throttle - dt * 0.72);
+  sim.brake = cmd.brake ? 1 : 0;
+  if (sim.abFuel == null) sim.abFuel = 1;
+  if (sim.abSpool == null) sim.abSpool = 0;
+  if (cmd.boost && sim.abFuel > 0.02 && !sim.brake) {
+    sim.abSpool = Math.min(1, sim.abSpool + dt * 5.5);
+    sim.abFuel = Math.max(0, sim.abFuel - dt * 0.13 * Math.max(0.35, sim.abSpool));
+  } else {
+    sim.abSpool = Math.max(0, sim.abSpool - dt * 3.2);
+    sim.abFuel = Math.min(1, sim.abFuel + dt * (sim.brake ? 0.04 : 0.16));
+  }
+  const spool = sim.abSpool;
+  sim.boost = spool > 0.28 ? 1 : 0;
+  const spec = sim.spec;
+  const rates = spec ? { roll: spec.roll, pitch: spec.pitch, yaw: spec.yaw } : null;
   const vmag0 = Math.max(1, hypot3(sim.vel));
-  sim.q = integrateAttitude(sim.q, cmd.roll, cmd.pitch, cmd.yaw, vmag0, dt);
+  sim.q = integrateAttitude(sim.q, cmd.roll, cmd.pitch, cmd.yaw, vmag0, dt, rates);
   const b = basis(sim.q);
   const f = b.f, up = b.u;
   const vmag = Math.max(1, hypot3(sim.vel));
@@ -140,14 +162,19 @@ function stepFlight(sim, cmd, dt) {
   const liftAccel = cl * spF * 9.8;
   let acc = [0, -9.8, 0];
   acc = add(acc, mul(up, liftAccel));
-  const thrust = 16 + sim.throttle * 38 + (sim.boost ? 46 : 0);
-  const drag = 4.1 + vmag * vmag * 0.00132 + Math.abs(aoa) * 8;
+  const thrustK = spec ? spec.thrust : 1;
+  const burnK = spec ? spec.burner : 1;
+  const dragK = spec ? spec.drag : 1;
+  const thrust = (16 + sim.throttle * 38) * thrustK + spool * 92 * burnK;
+  let drag = (4.1 + vmag * vmag * 0.00132 + Math.abs(aoa) * 8) * dragK;
+  if (sim.brake) drag += 54 + vmag * 0.42;
   acc = add(acc, mul(f, thrust));
   acc = add(acc, mul(vdir, -drag));
-  acc = add(acc, mul(sub(mul(f, vmag), sim.vel), 1.55));
+  acc = add(acc, mul(sub(mul(f, vmag), sim.vel), sim.brake ? 0.7 : 1.55));
   sim.vel = add(sim.vel, mul(acc, dt));
   let ns = hypot3(sim.vel);
-  if (ns > 305) sim.vel = mul(sim.vel, 305 / ns);
+  const cap = spool > 0.2 ? ((spec && spec.vmax) || 360) : 305;
+  if (ns > cap) sim.vel = mul(sim.vel, cap / ns);
   if (ns < 48 && sim.alive) sim.vel = mul(f, 48);
   sim.pos = add(sim.pos, mul(sim.vel, dt));
   const gy = groundY(sim.pos[0], sim.pos[2]);
@@ -271,6 +298,53 @@ function buildAirframe(dst) {
     addBox(dst, x, -1.05, -0.35, 0.28, 0.28, 2.7, i % 2 ? metal : [0.62, 0.28, 0.14]);
   }
   addBox(dst, 0, 0.7, -7.15, 0.16, 0.18, 1.1, [0.75, 0.5, 0.12]);
+  addBox(dst, 0, 0.98, -0.8, 1.5, 0.05, 5.2, [0.26, 0.29, 0.2]);
+  addBox(dst, -3.4, 0.18, -0.25, 2.4, 0.07, 2.5, [0.24, 0.27, 0.19]);
+  addBox(dst, 3.4, 0.18, -0.25, 2.4, 0.07, 2.5, [0.24, 0.27, 0.19]);
+  addBox(dst, 0, -0.7, -1.2, 0.9, 0.16, 4.2, dark);
+}
+function buildLance(dst) {
+  const skin = [0.62, 0.66, 0.7];
+  const dark = [0.18, 0.2, 0.24];
+  const glass = [0.2, 0.45, 0.55];
+  const metal = [0.75, 0.78, 0.8];
+  addBox(dst, 0, 0.05, -6.4, 0.7, 0.7, 2.2, skin);
+  addBox(dst, 0, 0.08, -4.2, 1.15, 1.05, 2.6, skin);
+  addBox(dst, 0, 0.1, -1.2, 1.35, 1.2, 4.2, skin);
+  addBox(dst, 0, 0.12, 2.2, 1.15, 1.05, 3.2, dark);
+  addBox(dst, 0, 0.9, -2.6, 0.72, 0.42, 2.4, glass);
+  addBox(dst, -3.6, 0, 0.2, 6.4, 0.16, 2.15, skin, 0.42);
+  addBox(dst, 3.6, 0, 0.2, 6.4, 0.16, 2.15, skin, -0.42);
+  addBox(dst, -6.5, 0.05, 1.1, 0.9, 0.16, 1.3, metal, 0.42);
+  addBox(dst, 6.5, 0.05, 1.1, 0.9, 0.16, 1.3, metal, -0.42);
+  addBox(dst, 0, 1.7, 3.3, 0.14, 2.3, 1.7, skin);
+  addBox(dst, 0, 0.35, 3.6, 3.6, 0.1, 1.15, dark);
+  addBox(dst, -0.7, 0.15, 3.9, 0.55, 0.55, 1.3, metal);
+  addBox(dst, 0.7, 0.15, 3.9, 0.55, 0.55, 1.3, metal);
+  addBox(dst, -2.2, -0.45, 0.1, 0.22, 0.22, 2.4, [0.7, 0.32, 0.16]);
+  addBox(dst, 2.2, -0.45, 0.1, 0.22, 0.22, 2.4, [0.7, 0.32, 0.16]);
+  addBox(dst, 0, 0.15, -7.3, 0.12, 0.12, 0.7, [0.8, 0.55, 0.16]);
+}
+function buildDart(dst) {
+  const skin = [0.16, 0.17, 0.19];
+  const edge = [0.28, 0.3, 0.32];
+  const hot = [0.72, 0.42, 0.14];
+  const glass = [0.35, 0.55, 0.62];
+  addBox(dst, 0, 0, -8.2, 0.55, 0.5, 3.2, skin);
+  addBox(dst, 0, 0.02, -4.6, 1.05, 0.85, 4.2, skin);
+  addBox(dst, 0, 0.04, -0.6, 1.25, 0.95, 4.6, edge);
+  addBox(dst, 0, 0.08, 3.4, 1.45, 1.15, 4.4, skin);
+  addBox(dst, 0, 0.55, -3.4, 0.55, 0.32, 1.8, glass);
+  addBox(dst, -3.3, -0.05, 0.6, 5.6, 0.12, 2.6, edge, 0.55);
+  addBox(dst, 3.3, -0.05, 0.6, 5.6, 0.12, 2.6, edge, -0.55);
+  addBox(dst, -1.05, 0.15, 4.6, 0.85, 0.85, 2.4, [0.1, 0.1, 0.11]);
+  addBox(dst, 1.05, 0.15, 4.6, 0.85, 0.85, 2.4, [0.1, 0.1, 0.11]);
+  addBox(dst, -1.05, 0.15, 5.9, 0.7, 0.7, 0.35, hot);
+  addBox(dst, 1.05, 0.15, 5.9, 0.7, 0.7, 0.35, hot);
+  addBox(dst, -0.85, 1.55, 3.5, 0.12, 1.9, 1.5, skin);
+  addBox(dst, 0.85, 1.55, 3.5, 0.12, 1.9, 1.5, skin);
+  addBox(dst, 0, 0.15, 4.2, 3.2, 0.08, 1.1, edge);
+  addBox(dst, 0, 0.35, -6.5, 0.1, 0.28, 2.2, hot);
 }
 function buildShip(dst) {
   const hull = [0.22, 0.24, 0.26];
@@ -306,7 +380,7 @@ function terrainColor(y, x, z) {
 }
 function buildIsland() {
   const dst = [];
-  const step = 40;
+  const step = 32;
   for (let x = -1750; x < 1750; x += step) {
     for (let z = -1200; z < 1400; z += step) {
       const pts = [[x, 0, z], [x + step, 0, z], [x + step, 0, z + step], [x, 0, z + step]];
@@ -341,7 +415,7 @@ function buildIsland() {
 }
 function buildOcean() {
   const dst = [];
-  const step = 220, lim = 7200;
+  const step = 150, lim = 7200;
   for (let x = -lim; x < lim; x += step) {
     for (let z = -lim; z < lim; z += step) {
       const tideAt = (px, pz) => {
@@ -410,6 +484,10 @@ varying vec3 C;
 varying float L;
 varying float fogF;
 varying float spec;
+varying vec3 W;
+varying float solid;
+varying vec3 localP;
+varying vec3 localN;
 void main(){
   vec3 q=p;
   vec3 nn=n;
@@ -428,8 +506,12 @@ void main(){
   if(wave>0.5 && wave<1.5){
     vec3 V=normalize(cam-w.xyz);
     vec3 H=normalize(normalize(light)+V);
-    spec=pow(max(dot(wn,H),0.0), 36.0);
+    spec=pow(max(dot(wn,H),0.0), 48.0);
   }
+  W=w.xyz;
+  localP=q;
+  localN=nn;
+  solid=wave<0.5 ? 1.0 : 0.0;
   gl_Position=mvp*vec4(q,1.0);
 }`;
 const FS = `
@@ -438,10 +520,38 @@ varying vec3 C;
 varying float L;
 varying float fogF;
 varying float spec;
+varying vec3 W;
+varying float solid;
+varying vec3 localP;
+varying vec3 localN;
 uniform float alpha;
+uniform float uMap;
+uniform highp vec3 cam;
+uniform sampler2D uGround;
+uniform sampler2D uSkin;
+uniform sampler2D uSky;
 uniform vec3 fogCol, tint;
 void main(){
-  vec3 col=C*tint*clamp(L,0.0,1.45)+vec3(1.0,0.93,0.78)*spec*0.5;
+  vec3 col=C*tint*clamp(L,0.0,1.45)+vec3(1.0,0.95,0.82)*spec*0.62;
+  if(uMap>0.5 && uMap<1.5){
+    vec3 dirt=texture2D(uGround, W.xz*0.011).rgb;
+    col=mix(col, dirt*(0.55+0.7*clamp(L,0.0,1.2)), 0.82);
+  } else if(uMap>1.5 && uMap<2.5){
+    vec3 bn=abs(normalize(localN));
+    bn=max(bn, vec3(0.001));
+    bn/=bn.x+bn.y+bn.z;
+    vec3 skin=texture2D(uSkin, localP.zy*0.42).rgb*bn.x + texture2D(uSkin, localP.xz*0.42).rgb*bn.y + texture2D(uSkin, localP.xy*0.42).rgb*bn.z;
+    col=mix(col, skin*tint*clamp(L,0.35,1.35), 0.78);
+  } else if(uMap>2.5){
+    vec3 dir=normalize(W-cam);
+    float su=atan(dir.x, dir.z)*0.15915+0.5;
+    float sv=clamp(dir.y*1.15, 0.0, 1.0);
+    col=texture2D(uSky, vec2(su, sv)).rgb;
+  } else if(solid>0.5){
+    float cell=fract(sin(dot(floor(W.xz*2.2+W.y*0.6), vec2(19.7,43.1)))*91.7);
+    float grit=fract(sin(dot(W.xz, vec2(127.1,311.7)))*43758.5);
+    col*=0.88+0.09*cell+0.05*grit;
+  }
   gl_FragColor=vec4(mix(col, fogCol, fogF), alpha);
 }`;
 
@@ -480,7 +590,7 @@ function bootTidebreaker() {
     g.attachShader(prog, sh(g.VERTEX_SHADER, VS));
     g.attachShader(prog, sh(g.FRAGMENT_SHADER, FS));
     g.linkProgram(prog);
-    if (!g.getProgramParameter(prog, g.LINK_STATUS)) throw new Error('shader link');
+    if (!g.getProgramParameter(prog, g.LINK_STATUS)) throw new Error(g.getProgramInfoLog(prog) || 'shader link');
   } catch (err) {
     showDiag(err.message || 'shader failed');
     return;
@@ -498,11 +608,62 @@ function bootTidebreaker() {
     wave: g.getUniformLocation(prog, 'wave'),
     alpha: g.getUniformLocation(prog, 'alpha'),
     fog: g.getUniformLocation(prog, 'fogCol'),
-    tint: g.getUniformLocation(prog, 'tint')
+    tint: g.getUniformLocation(prog, 'tint'),
+    map: g.getUniformLocation(prog, 'uMap'),
+    ground: g.getUniformLocation(prog, 'uGround'),
+    skin: g.getUniformLocation(prog, 'uSkin'),
+    sky: g.getUniformLocation(prog, 'uSky')
   };
   g.enableVertexAttribArray(loc.p);
   g.enableVertexAttribArray(loc.n);
   g.enableVertexAttribArray(loc.c);
+  function makeTex(rgb) {
+    const tex = g.createTexture();
+    g.bindTexture(g.TEXTURE_2D, tex);
+    g.texImage2D(g.TEXTURE_2D, 0, g.RGBA, 1, 1, 0, g.RGBA, g.UNSIGNED_BYTE, new Uint8Array([rgb[0], rgb[1], rgb[2], 255]));
+    g.texParameteri(g.TEXTURE_2D, g.TEXTURE_MIN_FILTER, g.LINEAR);
+    g.texParameteri(g.TEXTURE_2D, g.TEXTURE_MAG_FILTER, g.LINEAR);
+    g.texParameteri(g.TEXTURE_2D, g.TEXTURE_WRAP_S, g.REPEAT);
+    g.texParameteri(g.TEXTURE_2D, g.TEXTURE_WRAP_T, g.REPEAT);
+    return tex;
+  }
+  function loadTex(url, tex) {
+    const img = new Image();
+    img.onload = () => {
+      g.bindTexture(g.TEXTURE_2D, tex);
+      g.pixelStorei(g.UNPACK_FLIP_Y_WEBGL, true);
+      g.texImage2D(g.TEXTURE_2D, 0, g.RGBA, g.RGBA, g.UNSIGNED_BYTE, img);
+      g.texParameteri(g.TEXTURE_2D, g.TEXTURE_MIN_FILTER, g.LINEAR_MIPMAP_LINEAR);
+      g.texParameteri(g.TEXTURE_2D, g.TEXTURE_MAG_FILTER, g.LINEAR);
+      g.texParameteri(g.TEXTURE_2D, g.TEXTURE_WRAP_S, g.REPEAT);
+      g.texParameteri(g.TEXTURE_2D, g.TEXTURE_WRAP_T, g.REPEAT);
+      g.generateMipmap(g.TEXTURE_2D);
+    };
+    img.src = url;
+  }
+  const groundTex = makeTex([150, 130, 90]);
+  const strikeTex = makeTex([90, 100, 70]);
+  const fastTex = makeTex([170, 174, 178]);
+  const skyTex = makeTex([70, 110, 170]);
+  loadTex('./assets/ground.jpg', groundTex);
+  loadTex('./assets/skin-strike.jpg', strikeTex);
+  loadTex('./assets/skin-fast.jpg', fastTex);
+  loadTex('./assets/sky.jpg', skyTex);
+  g.activeTexture(g.TEXTURE0);
+  g.bindTexture(g.TEXTURE_2D, groundTex);
+  g.uniform1i(loc.ground, 0);
+  g.activeTexture(g.TEXTURE1);
+  g.bindTexture(g.TEXTURE_2D, strikeTex);
+  g.uniform1i(loc.skin, 1);
+  g.activeTexture(g.TEXTURE2);
+  g.bindTexture(g.TEXTURE_2D, skyTex);
+  g.uniform1i(loc.sky, 2);
+  g.activeTexture(g.TEXTURE0);
+  function useSkin(tex) {
+    g.activeTexture(g.TEXTURE1);
+    g.bindTexture(g.TEXTURE_2D, tex);
+    g.activeTexture(g.TEXTURE0);
+  }
   function upload(data, dynamic) {
     const buf = g.createBuffer();
     g.bindBuffer(g.ARRAY_BUFFER, buf);
@@ -511,6 +672,8 @@ function bootTidebreaker() {
     return { buf, count: arr.length / 9, dyn: !!dynamic };
   }
   const jet = upload((() => { const d = []; buildAirframe(d); return d; })());
+  const jetLance = upload((() => { const d = []; buildLance(d); return d; })());
+  const jetDart = upload((() => { const d = []; buildDart(d); return d; })());
   const shipM = upload((() => { const d = []; buildShip(d); return d; })());
   const depotM = upload((() => { const d = []; buildDepot(d); return d; })());
   const samM = upload((() => { const d = []; buildSam(d); return d; })());
@@ -519,11 +682,12 @@ function bootTidebreaker() {
   const sky = upload(buildSky());
   const clouds = upload(buildClouds());
   const tracer = upload((() => { const d = []; addBox(d, 0, 0, -6, 0.42, 0.42, 12, [1, 1, 1]); return d; })());
+  const brakeMesh = upload((() => { const d = []; addBox(d, 0, 0.35, 0, 2.4, 0.08, 0.85, [1, 1, 1]); return d; })());
   const foxMesh = upload((() => { const d = []; addBox(d, 0, 0, -1.4, 0.38, 0.38, 2.8, [0.92, 0.93, 0.95]); return d; })());
   const puff = upload((() => { const d = []; addBox(d, 0, 0, 0, 1, 1, 1, [1, 1, 1]); return d; })());
   const FOV = 50 * Math.PI / 180;
   const keys = new Set();
-  const GAME_KEYS = new Set(['KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyQ', 'KeyE', 'KeyF', 'KeyR', 'KeyC', 'Space', 'ArrowUp', 'ArrowDown']);
+  const GAME_KEYS = new Set(['KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyQ', 'KeyE', 'KeyF', 'KeyR', 'KeyC', 'KeyT', 'KeyX', 'Space', 'ShiftLeft', 'ShiftRight', 'ArrowUp', 'ArrowDown']);
   addEventListener('keydown', (e) => {
     keys.add(e.code);
     if (GAME_KEYS.has(e.code)) e.preventDefault();
@@ -534,7 +698,7 @@ function bootTidebreaker() {
     if (e.code === 'KeyF') trigger = false;
   });
   addEventListener('blur', () => { keys.clear(); trigger = false; missileBtn = false; });
-  let trigger = false, missileBtn = false, mousePitch = 0, mouseRoll = 0, lookYaw = 0;
+  let trigger = false, missileBtn = false, burnBtn = false, brakeBtn = false, mousePitch = 0, mouseRoll = 0, lookYaw = 0;
   let stickX = 0, stickY = 0, cockpit = false;
   canvas.addEventListener('mousedown', (e) => { if (e.button === 0) { trigger = true; canvas.requestPointerLock?.(); } });
   addEventListener('mouseup', (e) => { if (e.button === 0) trigger = false; });
@@ -571,6 +735,29 @@ function bootTidebreaker() {
   $('fire').onpointerup = $('fire').onpointercancel = () => { trigger = false; };
   $('missile').onpointerdown = (e) => { e.preventDefault(); missileBtn = true; };
   $('missile').onpointerup = $('missile').onpointercancel = () => { missileBtn = false; };
+  if ($('burn')) {
+    $('burn').onpointerdown = (e) => { e.preventDefault(); burnBtn = true; };
+    $('burn').onpointerup = $('burn').onpointercancel = () => { burnBtn = false; };
+  }
+  if ($('brake')) {
+    $('brake').onpointerdown = (e) => { e.preventDefault(); brakeBtn = true; };
+    $('brake').onpointerup = $('brake').onpointercancel = () => { brakeBtn = false; };
+  }
+
+  let picked = 'strike';
+  document.querySelectorAll('.jet').forEach((btn) => {
+    btn.onclick = () => {
+      picked = btn.dataset.jet || 'strike';
+      document.querySelectorAll('.jet').forEach((b) => b.classList.toggle('on', b === btn));
+      const j = JETS[picked];
+      const brief = document.querySelector('.brief');
+      if (brief) brief.textContent = j.id === 'strike'
+        ? 'TB-10 Strike. An A-10C Thunderbolt II planform: straight wing, twin tails, heavy nose cannon. Stable gun runs, tough airframe.'
+        : j.id === 'lance'
+          ? 'TB-4 Lance. Original light fighter. Snappy roll, wide seeker, six fox-2s. Built to turn with the bandits.'
+          : 'TB-7 Dart. Original interceptor. Long afterburner, thin wing, serious top speed. Brake early or you will overshoot.';
+    };
+  });
 
   const sim = createSim();
   const E=createTargets().map((t) => {
@@ -582,6 +769,8 @@ function bootTidebreaker() {
   let running = false, ended = false, looping = false, last = 0, accT = 0, time = 0;
   let camEye = sim.pos.slice(), flash = 0, hitMark = 0, misPrev = false, result = '';
   let actx = null, hum = null, humGain = null;
+  let lockT = null, lockP = 0, designated = null;
+  let viewFov = FOV;
 
   function say(text) { $('comms').textContent = text; }
   function resetMission() {
@@ -596,10 +785,23 @@ function bootTidebreaker() {
     }
     shots.length = 0; ms.length = 0; parts.length = 0;
     ended = false; result = ''; flash = 0; cockpit = false;
-    camEye = add(add(sim.pos, [0, 6, 26]), [0, 0, 0]);
+    lockT = null; lockP = 0; designated = null;
+    const j = JETS[picked] || JETS.strike;
+    sim.spec = j;
+    sim.hp = j.hp;
+    sim.maxHp = j.hp;
+    sim.ammo = j.ammo;
+    sim.missiles = j.missiles;
+    sim.abFuel = 1;
+    sim.brake = 0;
+    sim.boost = 0;
+    sim.vel = [0, 0, -j.cruise];
+    camEye = add(sim.pos, [0, 8, 30]);
     $('endcard').hidden = true;
-    $('damageBar').style.width = '100%';
-    say('AWACS // BANDITS AND RAIDERS NORTH OF ' + ISLAND_NAME.toUpperCase());
+    if ($('damageBar')) $('damageBar').style.width = '100%';
+    if ($('abFill')) $('abFill').style.width = '100%';
+    $('airframe').textContent = j.name + (j.id === 'strike' ? '  ·  ' + AIRFRAME + ' PLANFORM' : '  ·  ORIGINAL');
+    say('AWACS // ' + j.name + ' CHECKS GOOD. RAIDERS NORTH OF ' + ISLAND_NAME.toUpperCase());
     $('objective').textContent = 'SINK THE RAIDERS AND THE FUEL FARM';
   }
   function burst(pos, color, n, speed) {
@@ -658,7 +860,7 @@ function bootTidebreaker() {
   function missile() {
     if (!running || ended || !sim.alive || sim.missiles <= 0 || sim.misCd > 0) return;
     const tgt = locked();
-    if (!tgt) { say('AWACS // NO LOCK'); return; }
+    if (!tgt) { say(lockP > 0.05 ? 'AWACS // STILL LOCKING' : 'AWACS // NO LOCK'); return; }
     sim.missiles--;
     sim.misCd = 0.45;
     const b = basis(sim.q);
@@ -667,20 +869,61 @@ function bootTidebreaker() {
     say('AWACS // FOX-2 — ' + tgt.name);
     blip(520, 0.18, 'sawtooth', 0.04);
   }
-  function locked() {
+  function angleTo(e) {
     const b = basis(sim.q);
+    const d = sub(e.pos, sim.pos);
+    const dist = hypot3(d) || 1;
+    const dir = mul(d, 1 / dist);
+    return { dist, ang: Math.acos(clamp(dot(dir, b.f), -1, 1)) };
+  }
+  function acquire() {
+    const cone = (sim.spec && sim.spec.cone) || 0.36;
     let best = null, score = 1e9;
     for (let i = 0; i < E.length; i++) {
       const e = E[i];
       if (e.hp <= 0) continue;
-      const d = sub(e.pos, sim.pos);
-      const dist = hypot3(d);
-      if (dist < 40 || dist > 2800) continue;
-      const dir = mul(d, 1 / dist);
-      const ang = Math.acos(clamp(dot(dir, b.f), -1, 1));
-      if (ang < 0.22 && ang + dist * 0.00015 < score) { score = ang + dist * 0.00015; best = e; }
+      const a = angleTo(e);
+      if (a.dist < 36 || a.dist > 3600) continue;
+      const wide = e === designated ? cone * 1.85 : cone;
+      if (a.ang > wide) continue;
+      let s = a.ang * 6 + a.dist * 0.0002;
+      if (e === lockT) s -= 0.45;
+      if (e === designated) s -= 0.9;
+      if (s < score) { score = s; best = e; }
     }
     return best;
+  }
+  function updateLock(dt) {
+    const cand = acquire();
+    const need = (sim.spec && sim.spec.lock) || 0.22;
+    if (!cand) {
+      if (lockT && lockT.hp > 0 && lockP >= 1) {
+        const a = angleTo(lockT);
+        const hold = ((sim.spec && sim.spec.cone) || 0.36) * 2.5;
+        if (a.dist < 4000 && a.ang < hold) return;
+      }
+      lockP = Math.max(0, lockP - dt * 2.2);
+      if (lockP <= 0) lockT = null;
+      return;
+    }
+    if (cand !== lockT) {
+      lockT = cand;
+      lockP = Math.max(lockP, 0.58);
+    }
+    lockP = Math.min(1, lockP + dt / need);
+  }
+  function locked() {
+    return lockP >= 1 && lockT && lockT.hp > 0 ? lockT : null;
+  }
+  function cycleLock() {
+    const live = [];
+    for (let i = 0; i < E.length; i++) if (E[i].hp > 0) live.push(E[i]);
+    if (!live.length) return;
+    let i = live.indexOf(designated || lockT);
+    designated = live[(i + 1) % live.length];
+    lockT = designated;
+    lockP = 1;
+    say('AWACS // DESIGNATE ' + designated.name);
   }
   function segHit(p0, p1, center, rad) {
     const ab = sub(p1, p0);
@@ -690,7 +933,7 @@ function bootTidebreaker() {
     return hypot3(sub(closest, center)) <= rad;
   }
   function update(dt) {
-    let gpRoll = 0, gpPitch = 0, gpYaw = 0, gpBoost = false, gpGun = false, gpMis = false, gpUp = false, gpDn = false;
+    let gpRoll = 0, gpPitch = 0, gpYaw = 0, gpBoost = false, gpBrake = false, gpGun = false, gpMis = false, gpUp = false, gpDn = false;
     const pads = navigator.getGamepads ? navigator.getGamepads() : [];
     for (let i = 0; i < pads.length; i++) {
       const gp = pads[i];
@@ -710,6 +953,8 @@ function bootTidebreaker() {
       if (gp.buttons[1] && gp.buttons[1].pressed) gpBoost = true;
       if (gp.buttons[7] && gp.buttons[7].value > 0.4) gpGun = true;
       if (gp.buttons[6] && gp.buttons[6].value > 0.4) gpBoost = true;
+      if (gp.buttons[4] && gp.buttons[4].pressed) gpBrake = true;
+      if (gp.buttons[5] && gp.buttons[5].pressed) gpBrake = true;
       if (gp.buttons[12] && gp.buttons[12].pressed) gpUp = true;
       if (gp.buttons[13] && gp.buttons[13].pressed) gpDn = true;
     }
@@ -720,19 +965,21 @@ function bootTidebreaker() {
     const pitchCmd = clamp((keys.has('KeyW') ? 1 : 0) - (keys.has('KeyS') ? 1 : 0) + stickY + gpPitch + mousePitch, -1, 1);
     const yawCmd = clamp((keys.has('KeyQ') ? 1 : 0) - (keys.has('KeyE') ? 1 : 0) + lookYaw - gpYaw, -1, 1);
     if (keys.has('KeyC')) { keys.delete('KeyC'); cockpit = !cockpit; }
+    if (keys.has('KeyT')) { keys.delete('KeyT'); cycleLock(); }
     const cmd = {
       roll: rollCmd,
       pitch: pitchCmd,
       yaw: yawCmd,
-      boost: keys.has('Space') || gpBoost,
+      boost: keys.has('Space') || gpBoost || burnBtn,
+      brake: keys.has('ShiftLeft') || keys.has('ShiftRight') || keys.has('KeyX') || gpBrake || brakeBtn,
       throttleUp: keys.has('ArrowUp') || gpUp,
       throttleDown: keys.has('ArrowDown') || gpDn
     };
-    if (cmd.boost) sim.boost = 1;
     stepFlight(sim, cmd, dt);
     if (!sim.alive && !ended) finish(false, 'AIRCRAFT LOST OVER ' + ISLAND_NAME.toUpperCase());
     sim.gunCd = Math.max(0, sim.gunCd - dt);
     sim.misCd = Math.max(0, sim.misCd - dt);
+    updateLock(dt);
     if ((trigger || keys.has('KeyF') || gpGun) && sim.alive && !ended) fire();
     const misDown = missileBtn || keys.has('KeyR') || gpMis;
     if (misDown && !misPrev) missile();
@@ -802,7 +1049,7 @@ function bootTidebreaker() {
       if (tgt) {
         const dir = norm(sub(tgt.pos, m.p));
         const vm = hypot3(m.v) || 260;
-        m.v = mul(norm(add(mul(norm(m.v), 0.78), mul(dir, 0.22))), Math.min(460, vm + 80 * dt));
+        m.v = mul(norm(add(mul(norm(m.v), 0.52), mul(dir, 0.48))), Math.min(540, vm + 150 * dt));
       }
       m.p = add(m.p, mul(m.v, dt));
       m.life -= dt;
@@ -827,13 +1074,24 @@ function bootTidebreaker() {
     $('alt').textContent = String(Math.round((sim.pos[1] - groundY(sim.pos[0], sim.pos[2])) * 3.28084));
     const hdg = ((-b.yaw * 180 / Math.PI) % 360 + 360) % 360;
     $('hdg').textContent = String(Math.round(hdg)).padStart(3, '0');
-    $('thr').textContent = String(Math.round(sim.throttle * 100 + (sim.boost ? 15 : 0)));
+    $('thr').textContent = sim.boost ? 'AB' : (sim.brake ? 'BRK' : String(Math.round(sim.throttle * 100)));
     $('ammo').textContent = String(sim.ammo);
     $('missileCount').textContent = String(sim.missiles);
     $('weapon').textContent = trigger && sim.ammo > 0 ? 'GUNS' : (sim.ammo ? 'READY' : 'WINCHESTER');
-    $('lock').textContent = lock ? 'LOCK ' + lock.name : 'NO LOCK';
+    if ($('prop')) $('prop').textContent = sim.boost ? 'AFTERBURNER' : (sim.brake ? 'AIRBRAKE' : 'MIL POWER');
+    if ($('abFill')) $('abFill').style.width = Math.round((sim.abFuel || 0) * 100) + '%';
+    if ($('abBar')) {
+      $('abBar').classList.toggle('hot', !!sim.boost);
+      $('abBar').classList.toggle('brake', !!sim.brake);
+    }
+    const full = lock;
+    if (full) $('lock').textContent = 'LOCK ' + full.name;
+    else if (lockT && lockP > 0.04) $('lock').textContent = 'LOCKING ' + lockT.name + ' ' + Math.round(lockP * 100);
+    else $('lock').textContent = 'NO LOCK';
+    $('reticle').classList.toggle('locked', !!full);
+    $('reticle').classList.toggle('locking', !full && lockP > 0.04);
     $('status').textContent = primariesLeft() + ' PRIMARY TARGETS';
-    $('damageBar').style.width = sim.hp + '%';
+    $('damageBar').style.width = Math.max(0, Math.min(100, sim.hp / (sim.maxHp || 100) * 100)) + '%';
     const aoa = Math.atan2(-dot(norm(sim.vel), b.u), Math.max(0.2, dot(norm(sim.vel), b.f)));
     $('aoa').textContent = (aoa * 180 / Math.PI).toFixed(0);
     if (humGain && actx) {
@@ -853,19 +1111,20 @@ function bootTidebreaker() {
     g.vertexAttribPointer(loc.c, 3, g.FLOAT, false, 36, 24);
   }
   let vp = IDENT;
-  function draw(mesh, model, alpha, wave, tint) {
+  function draw(mesh, model, alpha, wave, tint, map) {
     if (!mesh || mesh.count < 1) return;
     bindMesh(mesh);
     g.uniformMatrix4fv(loc.mvp, false, mm(vp, model));
     g.uniformMatrix4fv(loc.mod, false, model);
     g.uniform1f(loc.alpha, alpha);
     g.uniform1f(loc.wave, wave);
+    g.uniform1f(loc.map, map || 0);
     g.uniform3fv(loc.tint, tint || [1, 1, 1]);
     g.depthMask(alpha >= 0.99);
     g.drawArrays(g.TRIANGLES, 0, mesh.count);
   }
   function resize() {
-    const dpr = Math.min(window.devicePixelRatio || 1, 1.75);
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const w = Math.max(2, Math.floor(innerWidth * dpr));
     const h = Math.max(2, Math.floor(innerHeight * dpr));
     if (canvas.width === w && canvas.height === h) return;
@@ -876,13 +1135,13 @@ function bootTidebreaker() {
   addEventListener('resize', resize);
   function drawLadder() {
     const cv = $('ladder');
-    const dpr = Math.min(devicePixelRatio || 1, 1.75);
+    const dpr = Math.min(devicePixelRatio || 1, 2);
     const w = cv.width = Math.floor(innerWidth * dpr);
     const h = cv.height = Math.floor(innerHeight * dpr);
     const x = cv.getContext('2d');
     x.clearRect(0, 0, w, h);
     const b = basis(sim.q);
-    const px = (h * 0.5) / Math.tan(FOV * 0.5);
+    const px = (h * 0.5) / Math.tan(viewFov * 0.5);
     x.save();
     x.translate(w / 2, h / 2);
     x.rotate(-b.roll);
@@ -939,11 +1198,18 @@ function bootTidebreaker() {
         sx = w / 2 + (dx / mag) * w * 0.42;
         sy = h / 2 + (dy / mag) * h * 0.34;
       }
-      const hot = lock === e;
+      const hot = lock === e || e === lockT;
       x.strokeStyle = e.kind === 'bandit' ? 'rgba(224,96,64,0.95)' : (e.primary ? 'rgba(227,176,90,0.95)' : 'rgba(210,220,210,0.8)');
       x.lineWidth = (hot ? 2.4 : 1.3) * dpr;
       const m = (hot ? 16 : 11) * dpr;
       x.strokeRect(sx - m, sy - m, m * 2, m * 2);
+      if (e === lockT) {
+        x.beginPath();
+        x.strokeStyle = lock ? '#fff' : 'rgba(255,236,210,0.95)';
+        x.lineWidth = 3 * dpr;
+        x.arc(sx, sy, m + 8 * dpr, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * lockP);
+        x.stroke();
+      }
       if (hot || e.primary) {
         x.font = (11 * dpr) + 'px sans-serif';
         x.fillStyle = x.strokeStyle;
@@ -979,14 +1245,16 @@ function bootTidebreaker() {
     const b = basis(sim.q);
     const f = b.f, up = b.u;
     let desired;
+    const kick = sim.boost ? 5 : (sim.brake ? -3 : 0);
     if (cockpit) desired = add(add(sim.pos, mul(f, 1.7)), mul(up, 0.9));
-    else desired = add(add(sim.pos, mul(f, -26)), mul(up, 7.2));
+    else desired = add(add(sim.pos, mul(f, -26 - kick)), mul(up, 7.2 + (sim.boost ? 0.8 : 0)));
     if (flash > 0.4) desired = add(desired, [(Math.random() - 0.5) * 0.4, (Math.random() - 0.5) * 0.3, (Math.random() - 0.5) * 0.4]);
     const k = 1 - Math.exp(-8 * 0.016);
     camEye = add(camEye, mul(sub(desired, camEye), k));
     if (camEye[1] < 1.5) camEye[1] = 1.5;
     const target = cockpit ? add(sim.pos, mul(f, 90)) : add(sim.pos, mul(f, 18));
-    vp = mm(persp(FOV, canvas.width / canvas.height, 0.35, 16000), lookAt(camEye, target, up));
+    viewFov = FOV * (sim.boost ? 1.08 : sim.brake ? 0.95 : 1);
+    vp = mm(persp(viewFov, canvas.width / canvas.height, 0.35, 16000), lookAt(camEye, target, up));
     g.uniform3f(loc.cam, camEye[0], camEye[1], camEye[2]);
     g.uniform3f(loc.light, 0.35, 0.72, 0.22);
     g.uniform1f(loc.time, time);
@@ -996,18 +1264,39 @@ function bootTidebreaker() {
     g.enable(g.DEPTH_TEST);
     g.enable(g.BLEND);
     g.blendFunc(g.SRC_ALPHA, g.ONE_MINUS_SRC_ALPHA);
-    draw(sky, matQuat([0, 0, 0, 1], camEye, 1), 1, 2);
+    draw(sky, matQuat([0, 0, 0, 1], camEye, 1), 1, 2, [1, 1, 1], 3);
     draw(ocean, IDENT, 1, 1);
-    draw(island, IDENT, 1, 0);
+    draw(island, IDENT, 1, 0, [1, 1, 1], 1);
     for (let i = 0; i < E.length; i++) {
       const e = E[i];
       if (e.hp <= 0 && e.pos[1] < -8) continue;
       if (e.kind === 'ship') draw(shipM, matQuat(quatAim([Math.sin(e.yaw), 0, -Math.cos(e.yaw)]), e.pos, 1.35), e.hp > 0 ? 1 : 0.85, 0);
       else if (e.kind === 'depot' && e.hp > 0) draw(depotM, matQuat(quatAim([Math.sin(e.yaw), 0, -Math.cos(e.yaw)]), e.pos, 1), 1, 0);
       else if (e.kind === 'sam' && e.hp > 0) draw(samM, matQuat(quatAim([Math.sin(e.yaw), 0, -Math.cos(e.yaw)]), [e.pos[0], e.pos[1] + 1, e.pos[2]], 1), 1, 0);
-      else if (e.kind === 'bandit' && e.hp > 0) draw(jet, matQuat(e.q, e.pos, 0.62), 1, 0, [1, 0.55, 0.42]);
+      else if (e.kind === 'bandit' && e.hp > 0) {
+        useSkin(fastTex);
+        draw(jetLance, matQuat(e.q, e.pos, 0.72), 1, 0, [0.95, 0.55, 0.48], 2);
+      }
     }
-    if (!cockpit && sim.alive) draw(jet, matQuat(sim.q, sim.pos, 1), 1, 0);
+    const playerMesh = picked === 'lance' ? jetLance : picked === 'dart' ? jetDart : jet;
+    if (!cockpit && sim.alive) {
+      useSkin(picked === 'strike' ? strikeTex : fastTex);
+      const skinTint = picked === 'dart' ? [0.42, 0.44, 0.48] : [1, 1, 1];
+      draw(playerMesh, matQuat(sim.q, sim.pos, 1), 1, 0, skinTint, 2);
+    }
+    if (sim.brake && sim.alive && !cockpit) {
+      const left = add(add(sim.pos, mul(b.r, -3.1)), add(mul(up, 0.85), mul(f, -0.3)));
+      const right = add(add(sim.pos, mul(b.r, 3.1)), add(mul(up, 0.85), mul(f, -0.3)));
+      draw(brakeMesh, matQuat(sim.q, left, 1), 1, 0, [0.22, 0.22, 0.2]);
+      draw(brakeMesh, matQuat(sim.q, right, 1), 1, 0, [0.22, 0.22, 0.2]);
+    }
+    if (sim.boost && sim.alive && !cockpit) {
+      const flame = 0.7 + (sim.abSpool || 1) * 2.1;
+      const glowL = add(add(sim.pos, mul(f, -5.6)), add(mul(b.r, -1.05), mul(up, 0.9)));
+      const glowR = add(add(sim.pos, mul(f, -5.6)), add(mul(b.r, 1.05), mul(up, 0.9)));
+      draw(puff, matQuat([0, 0, 0, 1], glowL, flame), 0.85, 2, [1, 0.55, 0.16]);
+      draw(puff, matQuat([0, 0, 0, 1], glowR, flame), 0.85, 2, [1, 0.42, 0.1]);
+    }
     for (let i = 0; i < shots.length; i++) {
       const s = shots[i];
       const dir = norm(s.v);
@@ -1064,7 +1353,7 @@ function bootTidebreaker() {
   function start() {
     document.querySelector('#boot').style.display = 'none';
     $('game').hidden = false;
-    if (!running) resetMission();
+    resetMission();
     running=true;
     ended = false;
     ensureAudio();
@@ -1084,7 +1373,10 @@ function bootTidebreaker() {
     setKeys: (codes) => { keys.clear(); trigger = false; for (let i = 0; i < codes.length; i++) keys.add(codes[i]); }
   };
   window.__tidebreaker = {
-    airframe: AIRFRAME,
+    jet: () => picked,
+    ab: () => sim.abFuel,
+    brake: () => sim.brake,
+    boost: () => sim.boost,
     theater: THEATER,
     island: ISLAND_NAME,
     place: (x, y, z) => {

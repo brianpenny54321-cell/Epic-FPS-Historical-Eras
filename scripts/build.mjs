@@ -9,6 +9,7 @@ await mkdir('dist/src', {recursive:true});
 await cp('index.html', 'dist/index.html');
 await cp('src/main.js', 'dist/src/main.js');
 await cp('src/style.css', 'dist/src/style.css');
+await cp('assets', 'dist/assets', {recursive:true});
 
 const html = await readFile('dist/index.html', 'utf8');
 if (!html.includes('./src/main.js') || !html.includes('./src/style.css')) {

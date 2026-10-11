@@ -1,28 +1,37 @@
-# Epic FPS: Historical Eras
+# Operation Tidebreaker
 
-A free-to-play, self-contained browser FPS. No account, paid service, external assets, or game server required to play.
+Playable browser combat-flight prototype on the `tidebreaker-rebuild` branch. `main` is unchanged and is not the flight build.
 
-**Play:** https://brianpenny54321-cell.github.io/Epic-FPS-Historical-Eras/
+You fly an original TB-10 strike jet (A-10-style planform: straight wing, twin engines, twin tails, nose cannon) over a fictionalized Kharg island gulf. Sink the raider ships and the fuel farm. Procedural geometry only — no licensed aircraft meshes, audio, or UI from other games.
 
-## Eras
-- Normandy 1944
-- Rome, 79 CE
-- American Frontier, 1876
-- New Arcadia, 2149
+**Controls**
 
-## Controls
-- **WASD:** Move
-- **Mouse:** Look around (click the game to lock the pointer)
-- **Left click:** Fire
-- **R:** Reload
-- **1–4:** Switch era
+- W / S — pull up / nose down
+- A / D — bank left / bank right (the bank turns the jet)
+- Q / E — rudder
+- Mouse — fine aim after clicking the view
+- Space — afterburner (hold; fuel bar drains, then recovers)
+- Shift or X — airbrake
+- Arrow keys — throttle
+- T — next target
+- F or click — cannon
+- R — fox-2 missile once the lock ring closes
+- C — cockpit / chase
+- Phone: left stick flies, right pad yaws, AB, BRK, GUN, and FOX-2
+
+Pick TB-10 Strike, TB-4 Lance, or TB-7 Dart on the briefing screen before launch.
 
 ## Run locally
-Use Node.js 20+ and run `npm run dev`, then open http://localhost:8080.
 
-## Build and tests
-`npm test` runs smoke/regression checks. `npm run build` creates the static site in `dist/`.
+Node.js 20+. From this folder:
 
-The game is an original stylized prototype; historical settings are fictionalized and non-documentary.
+```bash
+npm test
+npm run dev
+```
 
-<!-- GitHub Pages deployment workflow is configured in .github/workflows/pages.yml. -->
+Then open the local page the script prints.
+
+## Build
+
+`npm run build` writes the static site to `dist/`. GitHub Pages deploys only from `main` (not this branch).

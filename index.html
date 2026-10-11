@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#1a120c">
   <title>Operation Tidebreaker</title>
-  <link rel="stylesheet" href="./src/style.css?v=rebuild5">
+  <link rel="stylesheet" href="./src/style.css?v=rebuild6">
 </head>
 <body>
   <div id="diag" class="diag" hidden>FLIGHT SYSTEMS</div>
@@ -13,18 +13,23 @@
     <div id="start" class="boot-copy">
       <p class="eyebrow" id="theater">GULF THEATER · KHARG ISLAND</p>
       <h1>OPERATION<br><span>TIDEBREAKER</span></h1>
-      <p class="brief">First light over Kharg island. Sink both raiders and the fuel farm in an original TB-10 strike jet — an A-10C Thunderbolt II planform study. Straight wing, twin tails, nose cannon.</p>
+      <p class="brief">First light over Kharg island. Pick an airframe, then sink both raiders and the fuel farm. The TB-10 is an A-10C Thunderbolt II planform study: straight wing, twin tails, nose cannon.</p>
+      <div class="hangar" id="hangar">
+        <p class="eyebrow">CHOOSE AIRFRAME</p>
+        <button type="button" class="jet on" data-jet="strike"><b>TB-10 STRIKE</b><span>Heavy attacker. Stable gun, tough, short burner.</span></button>
+        <button type="button" class="jet" data-jet="lance"><b>TB-4 LANCE</b><span>Light fighter. Fast lock, six fox-2s, snappy roll.</span></button>
+        <button type="button" class="jet" data-jet="dart"><b>TB-7 DART</b><span>Interceptor. Long afterburner, thin wing, top speed.</span></button>
+      </div>
       <button id="fly" type="button">START MISSION</button>
       <ul class="keys">
         <li><b>W / S</b> pull up / nose down</li>
         <li><b>A / D</b> bank left / bank right</li>
         <li><b>Q / E</b> rudder</li>
-        <li><b>Mouse</b> fine aim after click</li>
-        <li><b>F / click</b> cannon</li>
-        <li><b>R</b> fox-2</li>
-        <li><b>Space</b> burner</li>
+        <li><b>Space</b> afterburner</li>
+        <li><b>Shift / X</b> airbrake</li>
         <li><b>Arrows</b> throttle</li>
-        <li><b>C</b> cockpit</li>
+        <li><b>F / click</b> cannon</li>
+        <li><b>R</b> fox-2 · <b>T</b> next target</li>
       </ul>
       <p class="legal">Original geometry and audio. No licensed game assets.</p>
     </div>
@@ -65,14 +70,18 @@
         <b id="ammo">420</b>
         <span id="weapon">READY</span>
         <small>FOX-2 <b id="missileCount">4</b></small>
-        <small>THR <b id="thr">62</b>%</small>
+        <small>THR <b id="thr">62</b></small>
+        <small id="prop">MIL POWER</small>
+        <div id="abBar" class="ab"><i id="abFill"></i></div>
       </div>
       <div class="radar"><span>RDR</span><canvas id="radar"></canvas></div>
       <div class="damage"><span id="damageBar"></span></div>
       <div class="comms" id="comms">AWACS // STAND BY</div>
-      <p class="hint">W PULL UP · S NOSE DOWN · A BANK LEFT · D BANK RIGHT · F GUN · R FOX-2 · SPACE BURNER</p>
+      <p class="hint">W PULL · S NOSE DOWN · A BANK LEFT · D BANK RIGHT · SPACE BURNER · SHIFT BRAKE · F GUN · R FOX-2 · T NEXT</p>
       <div id="stick" class="stick"><i id="nub"></i></div>
       <div id="look" class="mobile-look">RUDDER</div>
+      <button id="burn" class="touch-btn burn" type="button">AB</button>
+      <button id="brake" class="touch-btn brake" type="button">BRK</button>
       <button id="fire" class="touch-btn gun" type="button">GUN</button>
       <button id="missile" class="touch-btn fox" type="button">FOX-2</button>
     </div>
@@ -83,6 +92,6 @@
       <button id="refly" type="button">REFLY</button>
     </div>
   </div>
-  <script src="./src/main.js?v=rebuild5"></script>
+  <script src="./src/main.js?v=rebuild6"></script>
 </body>
 </html>
