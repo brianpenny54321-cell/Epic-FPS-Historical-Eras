@@ -6,10 +6,17 @@ const AIRFRAME = 'A-10C THUNDERBOLT II';
 const THEATER = 'GULF THEATER';
 const ISLAND_NAME = 'Kharg island';
 const JETS = {
-  strike: { id: 'strike', name: 'TB-10 STRIKE', roll: 1.85, pitch: 0.88, yaw: 0.78, thrust: 1, burner: 1.45, drag: 1, vmax: 360, cruise: 166, hp: 120, ammo: 640, missiles: 4, lock: 0.11, cone: 0.52 },
-  lance: { id: 'lance', name: 'TB-4 LANCE', roll: 2.75, pitch: 1.22, yaw: 0.95, thrust: 1.12, burner: 1.7, drag: 0.9, vmax: 410, cruise: 188, hp: 84, ammo: 300, missiles: 6, lock: 0.06, cone: 0.62 },
-  dart: { id: 'dart', name: 'TB-7 DART', roll: 2.2, pitch: 1.02, yaw: 0.64, thrust: 1.06, burner: 2.15, drag: 0.8, vmax: 490, cruise: 205, hp: 70, ammo: 220, missiles: 4, lock: 0.08, cone: 0.5 }
+  a10: { id: 'a10', name: 'A-10C THUNDERBOLT II', role: 'jet', roll: 1.7, pitch: 0.82, yaw: 0.72, thrust: 1, burner: 1.4, drag: 1.05, vmax: 355, cruise: 162, hp: 140, ammo: 780, missiles: 4, lock: 0.1, cone: 0.52 },
+  f22: { id: 'f22', name: 'F-22 RAPTOR', role: 'jet', roll: 3.15, pitch: 1.38, yaw: 1.05, thrust: 1.22, burner: 2.25, drag: 0.76, vmax: 530, cruise: 214, hp: 76, ammo: 260, missiles: 6, lock: 0.05, cone: 0.68 },
+  f35: { id: 'f35', name: 'F-35 LIGHTNING II', role: 'jet', roll: 2.45, pitch: 1.12, yaw: 0.92, thrust: 1.12, burner: 1.9, drag: 0.84, vmax: 460, cruise: 198, hp: 94, ammo: 340, missiles: 6, lock: 0.055, cone: 0.62 },
+  b2: { id: 'b2', name: 'B-2 SPIRIT', role: 'jet', roll: 0.78, pitch: 0.5, yaw: 0.38, thrust: 0.92, burner: 1.2, drag: 0.68, vmax: 275, cruise: 178, hp: 170, ammo: 0, missiles: 12, lock: 0.08, cone: 0.42 },
+  apache: { id: 'apache', name: 'AH-64 APACHE', role: 'helo', roll: 1.1, pitch: 0.7, yaw: 1.2, thrust: 1, burner: 1, drag: 1, vmax: 70, cruise: 28, hp: 110, ammo: 420, missiles: 8, lock: 0.09, cone: 0.55 },
+  mh6: { id: 'mh6', name: 'MH-6 LITTLE BIRD', role: 'helo', roll: 1.6, pitch: 0.9, yaw: 1.55, thrust: 1.1, burner: 1, drag: 0.8, vmax: 84, cruise: 36, hp: 64, ammo: 220, missiles: 4, lock: 0.07, cone: 0.6 },
+  ac130: { id: 'ac130', name: 'AC-130 SUPER HERCULES', role: 'gunship', roll: 0.6, pitch: 0.4, yaw: 0.3, thrust: 1, burner: 1, drag: 1, vmax: 160, cruise: 120, hp: 160, ammo: 1100, missiles: 0, lock: 0.04, cone: 0.9 }
 };
+JETS.strike = JETS.a10;
+JETS.lance = JETS.f35;
+JETS.dart = JETS.f22;
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
@@ -132,8 +139,175 @@ function createSim() {
     misCd: 0
   };
 }
+function buildHelo(dst) {
+  const skin = [0.32, 0.36, 0.28], dark = [0.12, 0.13, 0.11], glass = [0.25, 0.48, 0.52];
+  addBox(dst, 0, 0.2, -0.2, 1.8, 1.55, 4.4, skin);
+  addBox(dst, 0, 0.35, -2.2, 1.4, 1.3, 1.5, glass);
+  addBox(dst, 0, 0.15, 3.6, 0.42, 0.42, 4.4, dark);
+  addBox(dst, 0, 0.85, 5.5, 0.18, 1.35, 0.7, skin);
+  addBox(dst, 1.05, -0.35, 0.2, 0.28, 1.15, 0.28, dark);
+  addBox(dst, -1.05, -0.35, 0.2, 0.28, 1.15, 0.28, dark);
+  addBox(dst, 0, 1.2, -0.2, 11, 0.08, 0.28, [0.15, 0.15, 0.14]);
+  addBox(dst, 0, 1.2, -0.2, 0.28, 0.08, 11, [0.15, 0.15, 0.14]);
+}
+function buildGunship(dst) {
+  const skin = [0.42, 0.46, 0.43], dark = [0.16, 0.18, 0.16];
+  addBox(dst, 0, 0.5, 0, 2.8, 2.9, 18, skin);
+  addBox(dst, 0, 1.35, 1.5, 24, 0.32, 3.4, dark);
+  addBox(dst, -7, 0.55, 1.4, 1.2, 1.15, 2.6, [0.1, 0.1, 0.1]);
+  addBox(dst, 7, 0.55, 1.4, 1.2, 1.15, 2.6, [0.1, 0.1, 0.1]);
+  addBox(dst, 0, 3.4, -6, 0.28, 4.4, 2.4, skin);
+  addBox(dst, 0, 1.4, 8, 8.5, 0.18, 2.6, dark);
+  addBox(dst, -1.45, 0.15, -2, 0.45, 0.45, 3.2, [0.08, 0.08, 0.08]);
+}
+function buildSub(dst) {
+  const skin = [0.16, 0.2, 0.22];
+  addBox(dst, 0, 0, 0, 2.5, 2.3, 20, skin);
+  addBox(dst, 0, 1.55, 0.6, 1.35, 1.5, 3.4, [0.1, 0.12, 0.14]);
+  addBox(dst, 0, 2.45, 0.8, 0.16, 1.3, 0.16, [0.35, 0.35, 0.32]);
+  addBox(dst, 0, 0.15, 9, 0.35, 1.7, 2.4, skin);
+}
+function buildPerson(dst) {
+  addBox(dst, 0, 1.05, 0, 0.7, 1.05, 0.4, [1, 1, 1]);
+  addBox(dst, 0, 1.9, 0, 0.42, 0.42, 0.42, [1, 1, 1]);
+  addBox(dst, -0.22, 0.45, 0, 0.22, 0.85, 0.22, [1, 1, 1]);
+  addBox(dst, 0.22, 0.45, 0, 0.22, 0.85, 0.22, [1, 1, 1]);
+}
+function buildWing(dst) {
+  const skin = [0.09, 0.1, 0.11];
+  addBox(dst, 0, 0, 0.4, 26, 0.32, 7.2, skin);
+  addBox(dst, 0, 0.2, -1.4, 5.2, 0.85, 4.2, [0.14, 0.15, 0.16]);
+  addBox(dst, -5.2, -0.2, 1.6, 1.3, 0.55, 2.1, [0.04, 0.04, 0.05]);
+  addBox(dst, 5.2, -0.2, 1.6, 1.3, 0.55, 2.1, [0.04, 0.04, 0.05]);
+  addBox(dst, 0, 0.05, 2.6, 9, 0.16, 1.5, skin);
+}
+
+const MISSIONS = [
+  { id: 'light', no: '01', name: 'FIRST LIGHT', mode: 'jet', objective: 'SINK THE RAIDERS AND THE FUEL FARM', art: '', brief: 'First light over Kharg island. Pick an airframe, then sink both raiders and the fuel farm. The TB-10 is an A-10C Thunderbolt II planform study: straight wing, twin tails, nose cannon.', lines: [], hint: 'W PULL · S NOSE DOWN · A BANK LEFT · D BANK RIGHT · SPACE BURNER · SHIFT BRAKE · F GUN · R FOX-2 · T NEXT', spawn: [0, 128, 390], vel: [0, 0, -166], wep: 'CANNON', fox: 'FOX-2', ammo: 0, missiles: 0 },
+  { id: 'angel', no: '02', name: 'ANGEL LIFT', mode: 'helo', objective: 'RECOVER THE DOWNED PILOT', art: './assets/cine-angel.jpg', brief: 'A fighter is down on the north beach. Fly the TB-6 lifter, set down with F, then walk the pilot back to the landing zone. A yaws left.', lines: ['A fighter is down on the north beach.', 'TB-6 lifter. Space climbs. Shift descends. A yaws left.', 'Set down, press F, and walk the pilot back to the zone.'], hint: 'W FORWARD · S BACK · A YAW LEFT · D YAW RIGHT · SPACE UP · SHIFT DOWN · F GUN · R DISMOUNT / HOIST', spawn: [240, 72, 280], vel: [0, 0, -22], lz: [240, 0, 230], wep: 'DOOR GUN', fox: 'HOIST', ammo: 360, missiles: 0 },
+  { id: 'strait', no: '03', name: 'IRON GATE', mode: 'jet', objective: 'STOP THE STRAIT RAID', art: './assets/cine-strait.jpg', brief: 'Hold the strait. Incoming cruise missiles and a raid jet are running on the carrier. Splash the vampires. The deck guns are already up.', lines: ['The strait is open and the carrier is in the lane.', 'Cruise missiles are inbound. Splash them.', 'Deck guns are firing. You are the intercept.'], hint: 'W PULL · A BANK LEFT · D BANK RIGHT · F GUN · R FOX-2 · T NEXT · KEEP THE CARRIER ALIVE', spawn: [-40, 160, 200], vel: [0, 0, -180], integrity: 3, wep: 'CANNON', fox: 'FOX-2', ammo: 700, missiles: 6 },
+  { id: 'skimmer', no: '04', name: 'SKIMMER', mode: 'jet', objective: 'SINK THE FAST CRAFT', art: './assets/cine-skimmer.jpg', brief: 'Six fast craft are cutting across the gulf. Get low, lead the guns, and do not chase one boat off the map.', lines: ['Six fast craft, white wakes, no formation.', 'Get low. Lead them with the cannon.', 'Missiles are for the ones that break wide.'], hint: 'A BANK LEFT · D BANK RIGHT · F GUN · R FOX-2 · STAY LOW OVER THE WATER', spawn: [0, 90, 480], vel: [0, 0, -170], wep: 'CANNON', fox: 'FOX-2', ammo: 640, missiles: 6 },
+  { id: 'keel', no: '05', name: 'BLACK KEEL', mode: 'sub', objective: 'TORPEDO THE RAIDER CAPITAL', art: './assets/cine-keel.jpg', brief: 'Periscope depth. The raider capital and two escorts are north of the island. A turns left. W rises. R launches a torpedo once you have lock.', lines: ['Periscope depth, north of Kharg.', 'One capital ship, two escorts.', 'A turns left. W rises toward the scope. R is the torpedo.'], hint: 'A TURN LEFT · D TURN RIGHT · W RISE · S DIVE · R TORPEDO · T NEXT', spawn: [0, 3, 360], vel: [0, 0, -20], wep: 'SCOPE', fox: 'TORPEDO', ammo: 40, missiles: 6 },
+  { id: 'specter', no: '06', name: 'HARBOR LIGHT', mode: 'gunship', objective: 'STOP THE HARBOR SWEEP', art: './assets/cine-specter.jpg', brief: 'Orbit the harbor. Regime security — a fictional IRGC-pattern battalion in this sortie — is moving on civilians. The side cannon is yours. A slews the aim left.', lines: ['Night orbit over the harbor.', 'Regime security is pushing the docks. Civilians are still there.', 'Hold the orbit. A slews aim left. F is the side cannon.'], hint: 'A AIM LEFT · D AIM RIGHT · W / S AIM LONG / SHORT · F SIDE CANNON', spawn: [720, 260, -180], vel: [-150, 0, 0], orbit: [0, 0, -40], wep: 'SIDE GUN', fox: '—', ammo: 900, missiles: 0 }
+];
+
+function targetsFor(id) {
+  if (id === 'angel') return [
+    { name: 'DOWNED PILOT', kind: 'pilot', primary: true, hp: 40, pos: [240, 0, -30], r: 5 },
+    { name: 'BEACH PATROL', kind: 'troop', primary: false, hp: 18, pos: [270, 0, 90], r: 5, speed: 7, goal: [240, 0, -30] },
+    { name: 'BEACH PATROL 2', kind: 'troop', primary: false, hp: 18, pos: [190, 0, 30], r: 5, speed: 8, goal: [240, 0, -30] }
+  ];
+  if (id === 'strait') return [
+    { name: 'CARRIER', kind: 'friend', primary: false, hp: 800, pos: [-180, 4, 640], yaw: 0.15, r: 70 },
+    { name: 'VAMPIRE 1', kind: 'vampire', primary: true, hp: 24, pos: [420, 48, -980], r: 9, speed: 100, goal: [-180, 18, 640] },
+    { name: 'VAMPIRE 2', kind: 'vampire', primary: true, hp: 24, pos: [-620, 60, -1200], r: 9, speed: 108, goal: [-180, 18, 640] },
+    { name: 'VAMPIRE 3', kind: 'vampire', primary: true, hp: 24, pos: [40, 36, -1400], r: 9, speed: 96, goal: [-180, 18, 640] },
+    { name: 'RAID JET', kind: 'bandit', primary: true, hp: 36, pos: [80, 190, -360], r: 11, speed: 155, t: 0.3, orbit: [-80, 190, -480], rad: 340, cool: 0.7, q: [0, 0, 0, 1] },
+    { name: 'SKIMMER', kind: 'boat', primary: true, hp: 32, pos: [1500, 1.2, 200], yaw: 2.4, r: 16, speed: 34, t: 0.4 }
+  ];
+  if (id === 'skimmer') {
+    const boats = [];
+    for (let i = 0; i < 6; i++) boats.push({ name: 'FAST CRAFT ' + (i + 1), kind: 'boat', primary: true, hp: 28, pos: [-1700 + i * 520, 1.2, -980 - (i % 2) * 280], yaw: 0.6 + i * 0.35, r: 15, speed: 32 + i * 2, t: i * 0.6 });
+    return boats;
+  }
+  if (id === 'keel') return [
+    { name: 'RAIDER CAPITAL', kind: 'ship', primary: true, hp: 190, max: 190, pos: [80, 4, -1500], yaw: 0.2, r: 68 },
+    { name: 'ESCORT EAST', kind: 'ship', primary: true, hp: 80, pos: [420, 4, -1280], yaw: 0.35, r: 40 },
+    { name: 'ESCORT WEST', kind: 'ship', primary: true, hp: 80, pos: [-280, 4, -1320], yaw: -0.15, r: 40 }
+  ];
+  if (id === 'specter') return [
+    { name: 'CIVIL DOCKS', kind: 'civil', primary: false, hp: 48, pos: [30, 0, -20], r: 14 },
+    { name: 'CIVIL PIER', kind: 'civil', primary: false, hp: 48, pos: [-70, 0, 90], r: 14 },
+    { name: 'SECURITY EAST', kind: 'troop', primary: true, hp: 20, pos: [260, 0, -240], r: 6, speed: 12, goal: [30, 0, -20] },
+    { name: 'SECURITY NORTH', kind: 'troop', primary: true, hp: 20, pos: [40, 0, -280], r: 6, speed: 11, goal: [30, 0, -20] },
+    { name: 'SECURITY WEST', kind: 'troop', primary: true, hp: 20, pos: [-250, 0, -80], r: 6, speed: 12, goal: [-70, 0, 90] },
+    { name: 'SECURITY ROAD', kind: 'troop', primary: true, hp: 20, pos: [200, 0, 180], r: 6, speed: 13, goal: [-70, 0, 90] },
+    { name: 'TECHNICAL', kind: 'boat', primary: true, hp: 40, pos: [1480, 1.2, 360], yaw: 2.2, r: 16, speed: 22, t: 0.2 }
+  ];
+  return createTargets();
+}
+function stampTarget(t) {
+  const gy = groundY(t.pos[0], t.pos[2]);
+  if (t.kind === 'boat' || t.kind === 'ship' || t.kind === 'friend') t.pos[1] = t.kind === 'boat' ? 1.25 : 4;
+  else if (t.kind === 'vampire') t.pos[1] = t.pos[1] || 40;
+  else if (gy > 0.35 && (t.kind === 'depot' || t.kind === 'sam' || t.kind === 'troop' || t.kind === 'pilot' || t.kind === 'civil')) t.pos[1] = gy + (t.kind === 'depot' ? 0 : 1);
+  t.max = t.max || t.hp;
+  t.q = t.q || [0, 0, 0, 1];
+  t.cool = t.cool || 0;
+  return t;
+}
+function stepHelo(sim, cmd, dt) {
+  if (!sim.alive) return;
+  sim.q = qnorm(qmul(sim.q, qaxis(0, 1, 0, cmd.roll * 1.2 * dt)));
+  sim.q = qnorm(qmul(sim.q, qaxis(1, 0, 0, cmd.pitch * 0.5 * dt)));
+  const b0 = basis(sim.q);
+  sim.q = qnorm(qmul(sim.q, qaxis(0, 0, 1, -b0.roll * 2.1 * dt)));
+  const b = basis(sim.q);
+  const climb = (cmd.boost ? 1 : 0) - (cmd.brake ? 1 : 0);
+  let acc = mul(b.f, 14 + sim.throttle * 12);
+  acc = add(acc, [0, climb * 24 - 3.4, 0]);
+  acc = add(acc, mul(sim.vel, -0.9));
+  sim.vel = add(sim.vel, mul(acc, dt));
+  const ns = hypot3(sim.vel);
+  if (ns > 64) sim.vel = mul(sim.vel, 64 / ns);
+  sim.pos = add(sim.pos, mul(sim.vel, dt));
+  const gy = groundY(sim.pos[0], sim.pos[2]);
+  const floor = gy < 0.4 ? 2.4 : gy + 2.4;
+  if (sim.pos[1] < floor) {
+    if (sim.vel[1] < -16) sim.hp = Math.max(0, sim.hp - 18);
+    sim.pos[1] = floor;
+    sim.vel[1] = Math.max(0, sim.vel[1]);
+    if (sim.hp <= 0) sim.alive = false;
+  }
+  if (sim.pos[1] > 380) sim.pos[1] = 380;
+  sim.boost = climb > 0 ? 1 : 0;
+  sim.brake = climb < 0 ? 1 : 0;
+}
+function stepSub(sim, cmd, dt) {
+  if (!sim.alive) return;
+  sim.q = qnorm(qmul(qaxis(0, 1, 0, cmd.roll * 0.72 * dt), sim.q));
+  const b = basis(sim.q);
+  const spd = 16 + sim.throttle * 14;
+  const targetY = cmd.pitch > 0.15 ? 6.5 : cmd.pitch < -0.15 ? -3.5 : sim.pos[1];
+  sim.vel = mul(b.f, spd);
+  sim.vel[1] = (targetY - sim.pos[1]) * 0.7;
+  sim.pos = add(sim.pos, mul(sim.vel, dt));
+  sim.pos[1] = clamp(sim.pos[1], -6, 8);
+  sim.boost = 0;
+  sim.brake = sim.pos[1] < 1 ? 1 : 0;
+}
+function stepGunship(sim, cmd, dt) {
+  if (!sim.alive) return;
+  const c = sim.orbitCenter || [0, 0, -40];
+  sim.orbitT = (sim.orbitT || 0) + dt * 0.2;
+  const rad = 740;
+  sim.pos = [c[0] + Math.cos(sim.orbitT) * rad, 250, c[2] + Math.sin(sim.orbitT) * rad];
+  const fwd = [-Math.sin(sim.orbitT), -0.02, Math.cos(sim.orbitT)];
+  sim.q = quatAim(norm(fwd));
+  sim.vel = mul(norm(fwd), 148);
+  sim.aimX = clamp((sim.aimX || 0) - cmd.roll * dt * 0.9, -1, 1);
+  sim.aimY = clamp((sim.aimY || 0) + cmd.pitch * dt * 0.75, -0.85, 0.85);
+  sim.boost = 0;
+  sim.brake = 0;
+}
+function stepFoot(sim, cmd, dt) {
+  if (!sim.alive) return;
+  const b = basis(sim.q);
+  const fn = norm([b.f[0], 0, b.f[2]]);
+  const rn = norm([b.r[0], 0, b.r[2]]);
+  sim.vel = add(mul(fn, cmd.pitch * 8.5), mul(rn, -cmd.roll * 8.5));
+  sim.pos = add(sim.pos, mul(sim.vel, dt));
+  const gy = groundY(sim.pos[0], sim.pos[2]);
+  sim.pos[1] = (gy < 0.3 ? 1.6 : gy + 1.7);
+  sim.boost = 0;
+  sim.brake = 0;
+}
 function stepFlight(sim, cmd, dt) {
   if (!sim.alive) return;
+  if (sim.mode === 'helo') return stepHelo(sim, cmd, dt);
+  if (sim.mode === 'sub') return stepSub(sim, cmd, dt);
+  if (sim.mode === 'gunship') return stepGunship(sim, cmd, dt);
+  if (sim.mode === 'foot') return stepFoot(sim, cmd, dt);
   if (cmd.throttleUp) sim.throttle = Math.min(1, sim.throttle + dt * 0.72);
   if (cmd.throttleDown) sim.throttle = Math.max(0.18, sim.throttle - dt * 0.72);
   sim.brake = cmd.brake ? 1 : 0;
@@ -478,16 +652,13 @@ function buildClouds() {
 const VS = `
 attribute vec3 p,n,c;
 uniform mat4 mvp, mod;
-uniform vec3 cam, light;
+uniform vec3 light;
 uniform float time, wave;
 varying vec3 C;
-varying float L;
-varying float fogF;
-varying float spec;
 varying vec3 W;
-varying float solid;
 varying vec3 localP;
 varying vec3 localN;
+varying vec4 pack;
 void main(){
   vec3 q=p;
   vec3 nn=n;
@@ -498,41 +669,42 @@ void main(){
   vec4 w=mod*vec4(q,1.0);
   vec3 wn=normalize(vec3(mod[0].x*nn.x+mod[1].x*nn.y+mod[2].x*nn.z, mod[0].y*nn.x+mod[1].y*nn.y+mod[2].y*nn.z, mod[0].z*nn.x+mod[1].z*nn.y+mod[2].z*nn.z));
   float lam=max(dot(wn, normalize(light)),0.0);
-  L = wave>1.5 ? 1.0 : (0.32+0.78*lam+0.08*max(wn.y,0.0));
+  float lit = wave>1.5 ? 1.0 : (0.32+0.78*lam+0.08*max(wn.y,0.0));
   C=c;
-  float dist=length(w.xyz-cam);
-  fogF = wave>1.5 ? 0.0 : clamp(1.0-exp(-dist*0.00018), 0.0, 0.78);
-  spec = 0.0;
-  if(wave>0.5 && wave<1.5){
-    vec3 V=normalize(cam-w.xyz);
-    vec3 H=normalize(normalize(light)+V);
-    spec=pow(max(dot(wn,H),0.0), 48.0);
-  }
   W=w.xyz;
   localP=q;
   localN=nn;
-  solid=wave<0.5 ? 1.0 : 0.0;
+  pack=vec4(lit, wave>1.5 ? 1.0 : 0.0, wave>0.5 && wave<1.5 ? 1.0 : 0.0, wave<0.5 ? 1.0 : 0.0);
   gl_Position=mvp*vec4(q,1.0);
 }`;
 const FS = `
-precision mediump float;
 varying vec3 C;
-varying float L;
-varying float fogF;
-varying float spec;
 varying vec3 W;
-varying float solid;
 varying vec3 localP;
 varying vec3 localN;
+varying vec4 pack;
 uniform float alpha;
 uniform float uMap;
-uniform highp vec3 cam;
+uniform vec3 cam;
 uniform sampler2D uGround;
 uniform sampler2D uSkin;
 uniform sampler2D uSky;
-uniform vec3 fogCol, tint;
+uniform vec3 fogCol, tint, light;
 void main(){
-  vec3 col=C*tint*clamp(L,0.0,1.45)+vec3(1.0,0.95,0.82)*spec*0.62;
+  float L=pack.x;
+  float skyish=pack.y;
+  float wet=pack.z;
+  float solid=pack.w;
+  float dist=length(W-cam);
+  float fogF = skyish>0.5 ? 0.0 : clamp(1.0-exp(-dist*0.00018), 0.0, 0.78);
+  float spec=0.0;
+  if(wet>0.5){
+    vec3 V=normalize(cam-W);
+    vec3 wn=normalize(localN);
+    vec3 H=normalize(normalize(light)+V);
+    spec=pow(max(dot(wn,H),0.0), 48.0)*0.35;
+  }
+  vec3 col=C*tint*clamp(L,0.0,1.45)+vec3(1.0,0.95,0.82)*spec;
   if(uMap>0.5 && uMap<1.5){
     vec3 dirt=texture2D(uGround, W.xz*0.011).rgb;
     col=mix(col, dirt*(0.55+0.7*clamp(L,0.0,1.2)), 0.82);
@@ -573,10 +745,23 @@ function bootTidebreaker() {
   if (!canvas) return;
   const $ = (id) => document.getElementById(id);
   const diag = $('diag');
-  const showDiag = (msg) => { if (!diag) return; diag.hidden = false; diag.textContent = 'FLIGHT SYSTEMS // ' + msg; };
+  const bootStatus = $('bootStatus');
+  const showDiag = (msg) => {
+    if (diag) { diag.hidden = false; diag.textContent = 'FLIGHT SYSTEMS // ' + msg; }
+    if (bootStatus) bootStatus.textContent = msg;
+  };
   window.addEventListener('error', (e) => showDiag(e.message || 'script error'));
-  const g = canvas.getContext('webgl', { antialias: true, alpha: false, powerPreference: 'high-performance' });
-  if (!g) { showDiag('WebGL unavailable on this device'); return; }
+  const game = $('game');
+  if (game) game.hidden = false;
+  const failStart = () => {
+    const fly = document.querySelector('#fly');
+    if (fly) fly.onclick = () => showDiag(bootStatus ? bootStatus.textContent : 'WebGL failed');
+  };
+  if (bootStatus) bootStatus.textContent = 'LOADING TERRAIN…';
+  const g = canvas.getContext('webgl', { antialias: true, alpha: false, powerPreference: 'high-performance' })
+    || canvas.getContext('webgl', { antialias: false, alpha: false })
+    || canvas.getContext('experimental-webgl');
+  if (!g) { showDiag('WebGL unavailable on this device'); failStart(); return; }
   function sh(type, src) {
     const s = g.createShader(type);
     g.shaderSource(s, src);
@@ -584,39 +769,50 @@ function bootTidebreaker() {
     if (!g.getShaderParameter(s, g.COMPILE_STATUS)) throw new Error(g.getShaderInfoLog(s) || 'shader');
     return s;
   }
-  let prog;
-  try {
-    prog = g.createProgram();
-    g.attachShader(prog, sh(g.VERTEX_SHADER, VS));
-    g.attachShader(prog, sh(g.FRAGMENT_SHADER, FS));
+  function programWith(prec) {
+    const head = 'precision ' + prec + ' float;\n';
+    const prog = g.createProgram();
+    g.attachShader(prog, sh(g.VERTEX_SHADER, head + VS));
+    g.attachShader(prog, sh(g.FRAGMENT_SHADER, head + FS));
     g.linkProgram(prog);
     if (!g.getProgramParameter(prog, g.LINK_STATUS)) throw new Error(g.getProgramInfoLog(prog) || 'shader link');
+    return prog;
+  }
+  let prog;
+  const loc = {};
+  let texGround, texStrike, texFast, texSky;
+  let glLost = false;
+  function bindProgram(next) {
+    prog = next;
+    g.useProgram(prog);
+    loc.p = g.getAttribLocation(prog, 'p');
+    loc.n = g.getAttribLocation(prog, 'n');
+    loc.c = g.getAttribLocation(prog, 'c');
+    loc.mvp = g.getUniformLocation(prog, 'mvp');
+    loc.mod = g.getUniformLocation(prog, 'mod');
+    loc.cam = g.getUniformLocation(prog, 'cam');
+    loc.light = g.getUniformLocation(prog, 'light');
+    loc.time = g.getUniformLocation(prog, 'time');
+    loc.wave = g.getUniformLocation(prog, 'wave');
+    loc.alpha = g.getUniformLocation(prog, 'alpha');
+    loc.fog = g.getUniformLocation(prog, 'fogCol');
+    loc.tint = g.getUniformLocation(prog, 'tint');
+    loc.map = g.getUniformLocation(prog, 'uMap');
+    loc.ground = g.getUniformLocation(prog, 'uGround');
+    loc.skin = g.getUniformLocation(prog, 'uSkin');
+    loc.sky = g.getUniformLocation(prog, 'uSky');
+    g.enableVertexAttribArray(loc.p);
+    g.enableVertexAttribArray(loc.n);
+    g.enableVertexAttribArray(loc.c);
+  }
+  try {
+    try { bindProgram(programWith('highp')); }
+    catch (errHigh) { bindProgram(programWith('mediump')); }
   } catch (err) {
     showDiag(err.message || 'shader failed');
+    failStart();
     return;
   }
-  g.useProgram(prog);
-  const loc = {
-    p: g.getAttribLocation(prog, 'p'),
-    n: g.getAttribLocation(prog, 'n'),
-    c: g.getAttribLocation(prog, 'c'),
-    mvp: g.getUniformLocation(prog, 'mvp'),
-    mod: g.getUniformLocation(prog, 'mod'),
-    cam: g.getUniformLocation(prog, 'cam'),
-    light: g.getUniformLocation(prog, 'light'),
-    time: g.getUniformLocation(prog, 'time'),
-    wave: g.getUniformLocation(prog, 'wave'),
-    alpha: g.getUniformLocation(prog, 'alpha'),
-    fog: g.getUniformLocation(prog, 'fogCol'),
-    tint: g.getUniformLocation(prog, 'tint'),
-    map: g.getUniformLocation(prog, 'uMap'),
-    ground: g.getUniformLocation(prog, 'uGround'),
-    skin: g.getUniformLocation(prog, 'uSkin'),
-    sky: g.getUniformLocation(prog, 'uSky')
-  };
-  g.enableVertexAttribArray(loc.p);
-  g.enableVertexAttribArray(loc.n);
-  g.enableVertexAttribArray(loc.c);
   function makeTex(rgb) {
     const tex = g.createTexture();
     g.bindTexture(g.TEXTURE_2D, tex);
@@ -630,47 +826,78 @@ function bootTidebreaker() {
   function loadTex(url, tex) {
     const img = new Image();
     img.onload = () => {
+      if (g.isContextLost()) return;
       g.bindTexture(g.TEXTURE_2D, tex);
       g.pixelStorei(g.UNPACK_FLIP_Y_WEBGL, true);
-      g.texImage2D(g.TEXTURE_2D, 0, g.RGBA, g.RGBA, g.UNSIGNED_BYTE, img);
-      g.texParameteri(g.TEXTURE_2D, g.TEXTURE_MIN_FILTER, g.LINEAR_MIPMAP_LINEAR);
-      g.texParameteri(g.TEXTURE_2D, g.TEXTURE_MAG_FILTER, g.LINEAR);
-      g.texParameteri(g.TEXTURE_2D, g.TEXTURE_WRAP_S, g.REPEAT);
-      g.texParameteri(g.TEXTURE_2D, g.TEXTURE_WRAP_T, g.REPEAT);
-      g.generateMipmap(g.TEXTURE_2D);
+      try {
+        g.texImage2D(g.TEXTURE_2D, 0, g.RGBA, g.RGBA, g.UNSIGNED_BYTE, img);
+        g.texParameteri(g.TEXTURE_2D, g.TEXTURE_MIN_FILTER, g.LINEAR_MIPMAP_LINEAR);
+        g.texParameteri(g.TEXTURE_2D, g.TEXTURE_MAG_FILTER, g.LINEAR);
+        g.texParameteri(g.TEXTURE_2D, g.TEXTURE_WRAP_S, g.REPEAT);
+        g.texParameteri(g.TEXTURE_2D, g.TEXTURE_WRAP_T, g.REPEAT);
+        g.generateMipmap(g.TEXTURE_2D);
+      } catch (err) { /* context dropped mid-upload */ }
     };
     img.src = url;
   }
-  const groundTex = makeTex([150, 130, 90]);
-  const strikeTex = makeTex([90, 100, 70]);
-  const fastTex = makeTex([170, 174, 178]);
-  const skyTex = makeTex([70, 110, 170]);
-  loadTex('./assets/ground.jpg', groundTex);
-  loadTex('./assets/skin-strike.jpg', strikeTex);
-  loadTex('./assets/skin-fast.jpg', fastTex);
-  loadTex('./assets/sky.jpg', skyTex);
-  g.activeTexture(g.TEXTURE0);
-  g.bindTexture(g.TEXTURE_2D, groundTex);
-  g.uniform1i(loc.ground, 0);
-  g.activeTexture(g.TEXTURE1);
-  g.bindTexture(g.TEXTURE_2D, strikeTex);
-  g.uniform1i(loc.skin, 1);
-  g.activeTexture(g.TEXTURE2);
-  g.bindTexture(g.TEXTURE_2D, skyTex);
-  g.uniform1i(loc.sky, 2);
-  g.activeTexture(g.TEXTURE0);
+  function makeTextures() {
+    texGround = makeTex([150, 130, 90]);
+    texStrike = makeTex([90, 100, 70]);
+    texFast = makeTex([170, 174, 178]);
+    texSky = makeTex([70, 110, 170]);
+    loadTex('./assets/ground.jpg', texGround);
+    loadTex('./assets/skin-strike.jpg', texStrike);
+    loadTex('./assets/skin-fast.jpg', texFast);
+    loadTex('./assets/sky.jpg', texSky);
+    g.activeTexture(g.TEXTURE0);
+    g.bindTexture(g.TEXTURE_2D, texGround);
+    g.uniform1i(loc.ground, 0);
+    g.activeTexture(g.TEXTURE1);
+    g.bindTexture(g.TEXTURE_2D, texStrike);
+    g.uniform1i(loc.skin, 1);
+    g.activeTexture(g.TEXTURE2);
+    g.bindTexture(g.TEXTURE_2D, texSky);
+    g.uniform1i(loc.sky, 2);
+    g.activeTexture(g.TEXTURE0);
+  }
+  makeTextures();
   function useSkin(tex) {
     g.activeTexture(g.TEXTURE1);
     g.bindTexture(g.TEXTURE_2D, tex);
     g.activeTexture(g.TEXTURE0);
   }
-  function upload(data, dynamic) {
-    const buf = g.createBuffer();
-    g.bindBuffer(g.ARRAY_BUFFER, buf);
-    const arr = data instanceof Float32Array ? data : new Float32Array(data);
-    g.bufferData(g.ARRAY_BUFFER, arr, dynamic ? g.DYNAMIC_DRAW : g.STATIC_DRAW);
-    return { buf, count: arr.length / 9, dyn: !!dynamic };
+  const gpuMeshes = [];
+  function uploadBuf(mesh) {
+    mesh.buf = g.createBuffer();
+    g.bindBuffer(g.ARRAY_BUFFER, mesh.buf);
+    g.bufferData(g.ARRAY_BUFFER, mesh.arr, mesh.dyn ? g.DYNAMIC_DRAW : g.STATIC_DRAW);
   }
+  function upload(data, dynamic) {
+    const arr = data instanceof Float32Array ? data : new Float32Array(data);
+    const mesh = { buf: null, count: arr.length / 9, dyn: !!dynamic, arr };
+    gpuMeshes.push(mesh);
+    uploadBuf(mesh);
+    return mesh;
+  }
+  function restoreContext() {
+    try {
+      try { bindProgram(programWith('highp')); }
+      catch (errHigh) { bindProgram(programWith('mediump')); }
+      for (let i = 0; i < gpuMeshes.length; i++) uploadBuf(gpuMeshes[i]);
+      makeTextures();
+      glLost = false;
+      if (diag) diag.hidden = true;
+    } catch (err) {
+      showDiag(err.message || 'graphics restore failed');
+    }
+  }
+  canvas.addEventListener('webglcontextlost', (e) => {
+    e.preventDefault();
+    glLost = true;
+    showDiag('GRAPHICS LOST — RECOVERING');
+  });
+  canvas.addEventListener('webglcontextrestored', () => restoreContext());
+  const loseExt = g.getExtension('WEBGL_lose_context');
   const jet = upload((() => { const d = []; buildAirframe(d); return d; })());
   const jetLance = upload((() => { const d = []; buildLance(d); return d; })());
   const jetDart = upload((() => { const d = []; buildDart(d); return d; })());
@@ -685,6 +912,11 @@ function bootTidebreaker() {
   const brakeMesh = upload((() => { const d = []; addBox(d, 0, 0.35, 0, 2.4, 0.08, 0.85, [1, 1, 1]); return d; })());
   const foxMesh = upload((() => { const d = []; addBox(d, 0, 0, -1.4, 0.38, 0.38, 2.8, [0.92, 0.93, 0.95]); return d; })());
   const puff = upload((() => { const d = []; addBox(d, 0, 0, 0, 1, 1, 1, [1, 1, 1]); return d; })());
+  const heloM = upload((() => { const d = []; buildHelo(d); return d; })());
+  const gunM = upload((() => { const d = []; buildGunship(d); return d; })());
+  const subM = upload((() => { const d = []; buildSub(d); return d; })());
+  const personM = upload((() => { const d = []; buildPerson(d); return d; })());
+  const wingM = upload((() => { const d = []; buildWing(d); return d; })());
   const FOV = 50 * Math.PI / 180;
   const keys = new Set();
   const GAME_KEYS = new Set(['KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyQ', 'KeyE', 'KeyF', 'KeyR', 'KeyC', 'KeyT', 'KeyX', 'Space', 'ShiftLeft', 'ShiftRight', 'ArrowUp', 'ArrowDown']);
@@ -744,18 +976,36 @@ function bootTidebreaker() {
     $('brake').onpointerup = $('brake').onpointercancel = () => { brakeBtn = false; };
   }
 
-  let picked = 'strike';
+  let picked = 'a10';
+  let op = 'light';
+  function currentOp() { return MISSIONS.find((m) => m.id === op) || MISSIONS[0]; }
   document.querySelectorAll('.jet').forEach((btn) => {
     btn.onclick = () => {
       picked = btn.dataset.jet || 'strike';
       document.querySelectorAll('.jet').forEach((b) => b.classList.toggle('on', b === btn));
       const j = JETS[picked];
       const brief = document.querySelector('.brief');
-      if (brief) brief.textContent = j.id === 'strike'
+      if (brief && currentOp().mode === 'jet' && currentOp().id === 'light') brief.textContent = j.id === 'strike'
         ? 'TB-10 Strike. An A-10C Thunderbolt II planform: straight wing, twin tails, heavy nose cannon. Stable gun runs, tough airframe.'
         : j.id === 'lance'
           ? 'TB-4 Lance. Original light fighter. Snappy roll, wide seeker, six fox-2s. Built to turn with the bandits.'
           : 'TB-7 Dart. Original interceptor. Long afterburner, thin wing, serious top speed. Brake early or you will overshoot.';
+    };
+  });
+  document.querySelectorAll('[data-op]').forEach((btn) => {
+    btn.onclick = () => {
+      op = btn.dataset.op || 'light';
+      const m = MISSIONS.find((x) => x.id === op) || MISSIONS[0];
+      if (m.mode === 'helo' && (JETS[picked] || {}).role !== 'helo') picked = 'apache';
+      if (m.mode === 'gunship') picked = 'ac130';
+      if (m.mode === 'jet' && (JETS[picked] || {}).role !== 'jet') picked = 'a10';
+      if (m.id === 'keel') picked = picked;
+      document.querySelectorAll('.jet').forEach((b) => b.classList.toggle('on', b.dataset.jet === picked));
+      document.querySelectorAll('[data-op]').forEach((b) => b.classList.toggle('on', b === btn));
+      const brief = document.querySelector('.brief');
+      if (brief) brief.textContent = m.brief;
+      const hangar = $('hangar');
+      if (hangar) hangar.style.display = m.mode === 'jet' ? '' : 'none';
     };
   });
 
@@ -773,36 +1023,58 @@ function bootTidebreaker() {
   let viewFov = FOV;
 
   function say(text) { $('comms').textContent = text; }
+  function loadTargets(id) {
+    const built = (id === 'light' ? createTargets() : targetsFor(id)).map((t) => stampTarget(t));
+    E.length = 0;
+    for (let i = 0; i < built.length; i++) E.push(built[i]);
+  }
   function resetMission() {
+    const m = currentOp();
     const fresh = createSim();
     Object.assign(sim, fresh);
-    sim.q = fresh.q.slice(); sim.pos = fresh.pos.slice(); sim.vel = fresh.vel.slice();
-    for (let i = 0; i < E.length; i++) {
-      const src = E0[i];
-      E[i].hp = src.hp; E[i].cool = src.cool || 0; E[i].t = src.t || 0;
-      E[i].pos = src.pos.slice();
-      E[i].q = [0, 0, 0, 1];
-    }
+    sim.q = fresh.q.slice();
+    const craft = JETS[picked] || JETS.a10;
+    sim.mode = m.id === 'keel' ? 'sub' : craft.role === 'gunship' ? 'gunship' : craft.role === 'helo' ? 'helo' : 'jet';
+    sim.pos = m.spawn.slice();
+    sim.vel = m.vel.slice();
+    sim.orbitCenter = (m.orbit || [0, 0, -40]).slice();
+    sim.orbitT = 0.4;
+    sim.aimX = 0;
+    sim.aimY = 0;
+    sim.integrity = m.integrity || 3;
+    sim.lz = (m.lz || m.spawn).slice();
+    sim.rescued = 0;
+    sim.lookPitch = 0;
+    loadTargets(m.id);
     shots.length = 0; ms.length = 0; parts.length = 0;
     ended = false; result = ''; flash = 0; cockpit = false;
     lockT = null; lockP = 0; designated = null;
-    const j = JETS[picked] || JETS.strike;
+    const j = JETS[picked] || JETS.a10;
     sim.spec = j;
+    const flying = sim.mode === 'jet';
     sim.hp = j.hp;
     sim.maxHp = j.hp;
-    sim.ammo = j.ammo;
-    sim.missiles = j.missiles;
+    sim.ammo = flying ? (m.ammo || j.ammo) : (m.ammo || j.ammo);
+    sim.missiles = flying ? (m.missiles || j.missiles) : (m.missiles != null && m.mode !== 'jet' ? m.missiles : j.missiles);
+    if (sim.mode === 'helo') { sim.ammo = j.ammo; sim.missiles = j.missiles; sim.hp = j.hp; sim.maxHp = j.hp; }
+    if (sim.mode === 'gunship') { sim.ammo = j.ammo; sim.missiles = 0; sim.hp = j.hp; sim.maxHp = j.hp; }
+    if (sim.mode === 'sub') { sim.ammo = 0; sim.missiles = 6; sim.hp = 100; sim.maxHp = 100; }
     sim.abFuel = 1;
     sim.brake = 0;
     sim.boost = 0;
-    sim.vel = [0, 0, -j.cruise];
-    camEye = add(sim.pos, [0, 8, 30]);
+    camEye = add(sim.pos, m.mode === 'gunship' ? [0, 0, 0] : [0, 8, 30]);
     $('endcard').hidden = true;
     if ($('damageBar')) $('damageBar').style.width = '100%';
     if ($('abFill')) $('abFill').style.width = '100%';
-    $('airframe').textContent = j.name + (j.id === 'strike' ? '  ·  ' + AIRFRAME + ' PLANFORM' : '  ·  ORIGINAL');
-    say('AWACS // ' + j.name + ' CHECKS GOOD. RAIDERS NORTH OF ' + ISLAND_NAME.toUpperCase());
-    $('objective').textContent = 'SINK THE RAIDERS AND THE FUEL FARM';
+    const frame = sim.mode === 'sub' ? 'SUBMARINE  ·  PERISCOPE' : j.name;
+    $('airframe').textContent = frame;
+    const label = document.querySelector('.mission');
+    if (label) label.innerHTML = 'MISSION ' + m.no + ' <strong>' + m.name + '</strong>';
+    if ($('wepName')) $('wepName').textContent = m.wep;
+    if ($('foxName')) $('foxName').textContent = m.fox;
+    if ($('hint')) $('hint').textContent = m.hint;
+    $('objective').textContent = m.objective;
+    say('AWACS // ' + m.name + ' — ' + m.objective);
   }
   function burst(pos, color, n, speed) {
     for (let i = 0; i < n; i++) {
@@ -816,11 +1088,13 @@ function bootTidebreaker() {
     hitMark = 0.18;
     if (e.hp <= 0) {
       e.hp = 0;
-      burst(e.pos, [1, 0.45, 0.12], 28, 30);
-      burst(e.pos, [0.2, 0.2, 0.2], 12, 12);
+      burst(e.pos, [1, 0.5, 0.12], amount > 30 ? 40 : 16, amount > 30 ? 36 : 22);
+      burst(e.pos, [0.15, 0.15, 0.15], 14, 16);
+      burst(e.pos, [1, 0.85, 0.4], 8, 10);
+      blip(amount > 30 ? 110 : 720, 0.07, 'square', 0.04);
       say('AWACS // ' + e.name + ' DESTROYED');
       checkWin();
-    } else say('HIT // ' + e.name);
+    } else { hitMark = 0.22; say('HIT // ' + e.name); blip(880, 0.04, 'square', 0.025); }
   }
   function hurtPlayer(amount) {
     if (!sim.alive || ended) return;
@@ -841,11 +1115,65 @@ function bootTidebreaker() {
     ended = true;
     result = title;
     $('endTitle').textContent = win ? 'MISSION COMPLETE' : 'MISSION FAILED';
-    $('endText').textContent = title + (win ? ' — Kharg raid group is broken.' : ' — Refly when ready.');
+    $('endText').textContent = title + (win ? ' — sortie complete.' : ' — Refly when ready.');
     $('endcard').hidden = false;
   }
+  function gunAim() {
+    const center = sim.orbitCenter || [0, 0, -40];
+    const eye = sim.pos;
+    const to = norm(sub(center, eye));
+    const right = norm(cross(to, [0, 1, 0]));
+    const aim = add(center, add(mul(right, (sim.aimX || 0) * 420), mul(to, (sim.aimY || 0) * 420)));
+    aim[1] = Math.max(1.2, groundY(aim[0], aim[2]) + 1.2);
+    return aim;
+  }
+  function fireOrbit() {
+    if (sim.ammo <= 0) return;
+    sim.ammo--;
+    sim.gunCd = 0.07;
+    const aim = gunAim();
+    const eye = add(sim.pos, [0, -2, 0]);
+    shots.push({ p: eye.slice(), prev: eye.slice(), v: mul(norm(sub(aim, eye)), 980), life: 0.9, owner: 'player', dmg: 0, rad: 1 });
+    burst(aim, [1, 0.62, 0.18], 12, 18);
+    burst(aim, [0.2, 0.2, 0.18], 6, 8);
+    for (let i = 0; i < E.length; i++) {
+      const e = E[i];
+      if (e.hp > 0 && e.kind !== 'friend' && e.kind !== 'civil' && hypot3(sub(e.pos, aim)) < (e.r || 8) + 18) damageTarget(e, 18);
+    }
+    blip(70, 0.08, 'square', 0.05);
+    flash = Math.max(flash, 0.2);
+  }
+  function interact() {
+    if (sim.mode === 'helo') {
+      const pilot = E.filter((e) => e.kind === 'pilot' && e.hp > 0)[0];
+      if (!pilot) return;
+      const alt = sim.pos[1] - groundY(sim.pos[0], sim.pos[2]);
+      if (hypot3(sub(pilot.pos, sim.pos)) < 36 && alt < 16) {
+        sim.mode = 'foot';
+        sim.pos = [sim.lz[0], groundY(sim.lz[0], sim.lz[2]) + 1.7, sim.lz[2]];
+        sim.q = quatAim(norm(sub(pilot.pos, sim.pos)));
+        say('BOOTS DOWN — WALK TO THE PILOT. R TO HOIST. A STRAFES LEFT.');
+      } else say('AWACS // SET DOWN CLOSER');
+      return;
+    }
+    if (sim.mode === 'foot') {
+      const pilot = E.filter((e) => e.kind === 'pilot')[0];
+      if (pilot && pilot.hp > 0 && hypot3(sub(pilot.pos, sim.pos)) < 8) {
+        pilot.hp = 0;
+        pilot.primary = false;
+        sim.rescued = 1;
+        say('PILOT WITH YOU — WALK BACK TO THE LIFTER AND PRESS R');
+        return;
+      }
+      if (sim.rescued && hypot3(sub(sim.lz, sim.pos)) < 12) finish(true, 'PILOT RECOVERED');
+      else say(sim.rescued ? 'AWACS // BACK TO THE LANDING ZONE' : 'AWACS // CLOSER TO THE PILOT');
+    }
+  }
   function fire() {
-    if (!running || ended || !sim.alive || sim.ammo <= 0 || sim.gunCd > 0) return;
+    if (!running || ended || !sim.alive || sim.gunCd > 0) return;
+    if (sim.mode === 'foot') return;
+    if (sim.mode === 'gunship') return fireOrbit();
+    if (sim.ammo <= 0) return;
     sim.ammo--;
     sim.gunCd = 0.045;
     const b = basis(sim.q);
@@ -866,7 +1194,7 @@ function bootTidebreaker() {
     const b = basis(sim.q);
     const p = add(sim.pos, mul(b.f, 6));
     ms.push({ p: p.slice(), v: add(mul(b.f, 220), sim.vel), life: 4.2, tgt, smoke: 0 });
-    say('AWACS // FOX-2 — ' + tgt.name);
+    say('AWACS // ' + (sim.mode === 'sub' ? 'TORPEDO' : 'FOX-2') + ' — ' + tgt.name);
     blip(520, 0.18, 'sawtooth', 0.04);
   }
   function angleTo(e) {
@@ -961,7 +1289,13 @@ function bootTidebreaker() {
     mouseRoll *= Math.exp(-7 * dt);
     mousePitch *= Math.exp(-7 * dt);
     lookYaw *= Math.exp(-8 * dt);
-    const rollCmd = clamp((keys.has('KeyA') ? 1 : 0) - (keys.has('KeyD') ? 1 : 0) - stickX - gpRoll + mouseRoll, -1, 1);
+    if (sim.mode === 'foot') {
+      sim.q = qnorm(qmul(qaxis(0, 1, 0, mouseRoll * 8), sim.q));
+      sim.lookPitch = clamp((sim.lookPitch || 0) + mousePitch * 3.2, -0.75, 0.65);
+      mouseRoll = 0;
+      mousePitch = 0;
+    }
+    const rollCmd = clamp((keys.has('KeyA') ? 1 : 0) - (keys.has('KeyD') ? 1 : 0) - stickX - gpRoll + (sim.mode === 'foot' ? 0 : mouseRoll), -1, 1);
     const pitchCmd = clamp((keys.has('KeyW') ? 1 : 0) - (keys.has('KeyS') ? 1 : 0) + stickY + gpPitch + mousePitch, -1, 1);
     const yawCmd = clamp((keys.has('KeyQ') ? 1 : 0) - (keys.has('KeyE') ? 1 : 0) + lookYaw - gpYaw, -1, 1);
     if (keys.has('KeyC')) { keys.delete('KeyC'); cockpit = !cockpit; }
@@ -982,7 +1316,10 @@ function bootTidebreaker() {
     updateLock(dt);
     if ((trigger || keys.has('KeyF') || gpGun) && sim.alive && !ended) fire();
     const misDown = missileBtn || keys.has('KeyR') || gpMis;
-    if (misDown && !misPrev) missile();
+    if (misDown && !misPrev) {
+      if (sim.mode === 'helo' || sim.mode === 'foot') interact();
+      else missile();
+    }
     misPrev = misDown;
     const playerPos = sim.pos;
     for (let i = 0; i < E.length; i++) {
@@ -1024,6 +1361,41 @@ function bootTidebreaker() {
           shots.push({ p: add(e.pos, [0, 8, 0]), prev: e.pos.slice(), v, life: 3.2, owner: e, dmg: 12, rad: 4 });
           say('SAM // TRACKING');
         }
+      } else if (e.kind === 'boat') {
+        e.t = (e.t || 0) + dt;
+        e.yaw = (e.yaw || 0) + Math.sin(e.t * 0.8) * dt * 0.45;
+        const dirb = [Math.sin(e.yaw), 0, -Math.cos(e.yaw)];
+        e.pos = add(e.pos, mul(dirb, (e.speed || 28) * dt));
+        e.pos[1] = 1.3;
+      } else if (e.kind === 'vampire') {
+        const dest = e.goal || [-180, 18, 640];
+        const dirv = norm(sub(dest, e.pos));
+        e.pos = add(e.pos, mul(dirv, (e.speed || 100) * dt));
+        if (hypot3(sub(dest, e.pos)) < 46) {
+          e.hp = 0;
+          e.primary = false;
+          burst(e.pos, [1, 0.45, 0.15], 22, 20);
+          sim.integrity = (sim.integrity || 1) - 1;
+          say('VAMPIRE IMPACT ON THE CARRIER');
+          if (sim.integrity <= 0 && !ended) finish(false, 'THE CARRIER IS OUT OF THE FIGHT');
+          else checkWin();
+        }
+      } else if (e.kind === 'troop') {
+        const civ = E.filter((c) => c.kind === 'civil' && c.hp > 0)[0];
+        const pilotT = E.filter((c) => c.kind === 'pilot' && c.hp > 0)[0];
+        const goal = civ ? civ.pos : pilotT ? pilotT.pos : (e.goal || e.pos);
+        const dirt = norm(sub(goal, e.pos));
+        e.pos = add(e.pos, mul(dirt, (e.speed || 10) * dt));
+        const gyT = groundY(e.pos[0], e.pos[2]);
+        e.pos[1] = gyT > 0.3 ? gyT + 1 : 1;
+        if (civ && hypot3(sub(civ.pos, e.pos)) < 16) {
+          civ.hp -= dt * 7;
+          if (civ.hp <= 0 && !E.some((c) => c.kind === 'civil' && c.hp > 0) && !ended) finish(false, 'THE HARBOR CIVILIANS WERE OVERRUN');
+        }
+        if (pilotT && hypot3(sub(pilotT.pos, e.pos)) < 8) {
+          pilotT.hp -= dt * 6;
+          if (pilotT.hp <= 0 && !ended) finish(false, 'THE PILOT WAS LOST');
+        }
       }
     }
     for (let i = shots.length - 1; i >= 0; i--) {
@@ -1035,7 +1407,7 @@ function bootTidebreaker() {
       if (s.owner === 'player') {
         for (let k = 0; k < E.length; k++) {
           const e = E[k];
-          if (e.hp > 0 && segHit(s.prev, s.p, e.pos, e.r)) { damageTarget(e, s.dmg); burst(s.p, [1, 0.6, 0.2], 6, 14); gone = true; break; }
+          if (e.hp > 0 && s.dmg > 0 && e.kind !== 'friend' && e.kind !== 'civil' && e.kind !== 'pilot' && segHit(s.prev, s.p, e.pos, e.r)) { damageTarget(e, s.dmg); burst(s.p, [1, 0.6, 0.2], 8, 16); gone = true; break; }
         }
       } else if (segHit(s.prev, s.p, playerPos, 8)) {
         hurtPlayer(s.dmg); burst(s.p, [1, 0.3, 0.15], 8, 10); gone = true;
@@ -1228,6 +1600,12 @@ function bootTidebreaker() {
     const cyaw = Math.cos(yaw), syaw = Math.sin(yaw);
     rx.fillStyle = '#f2efe6';
     rx.beginPath(); rx.arc(rw / 2, rh / 2, 3, 0, Math.PI * 2); rx.fill();
+    rx.save();
+    rx.translate(rw / 2, rh / 2);
+    rx.rotate(time * 1.6);
+    rx.strokeStyle = 'rgba(227,160,74,0.55)';
+    rx.beginPath(); rx.moveTo(0, 0); rx.lineTo(70, 0); rx.stroke();
+    rx.restore();
     for (let i = 0; i < E.length; i++) {
       const e = E[i];
       if (e.hp <= 0 && e.kind !== 'ship') continue;
@@ -1241,25 +1619,45 @@ function bootTidebreaker() {
     }
   }
   function render() {
+    if (glLost || g.isContextLost()) return;
     resize();
     const b = basis(sim.q);
     const f = b.f, up = b.u;
     let desired;
+    let target;
     const kick = sim.boost ? 5 : (sim.brake ? -3 : 0);
-    if (cockpit) desired = add(add(sim.pos, mul(f, 1.7)), mul(up, 0.9));
-    else desired = add(add(sim.pos, mul(f, -26 - kick)), mul(up, 7.2 + (sim.boost ? 0.8 : 0)));
+    if (sim.mode === 'gunship') {
+      desired = sim.pos.slice();
+      target = gunAim();
+    } else if (sim.mode === 'foot') {
+      desired = add(sim.pos, [0, 1.55, 0]);
+      target = add(desired, add(mul(f, 16), [0, (sim.lookPitch || 0) * 8, 0]));
+    } else if (sim.mode === 'sub') {
+      desired = add(add(sim.pos, mul(f, -18)), [0, 5, 0]);
+      target = add(sim.pos, mul(f, 24));
+    } else if (cockpit) {
+      desired = add(add(sim.pos, mul(f, 1.7)), mul(up, 0.9));
+      target = add(sim.pos, mul(f, 90));
+    } else {
+      desired = add(add(sim.pos, mul(f, -26 - kick)), mul(up, 7.2 + (sim.boost ? 0.8 : 0)));
+      target = add(sim.pos, mul(f, 18));
+    }
     if (flash > 0.4) desired = add(desired, [(Math.random() - 0.5) * 0.4, (Math.random() - 0.5) * 0.3, (Math.random() - 0.5) * 0.4]);
     const k = 1 - Math.exp(-8 * 0.016);
     camEye = add(camEye, mul(sub(desired, camEye), k));
-    if (camEye[1] < 1.5) camEye[1] = 1.5;
-    const target = cockpit ? add(sim.pos, mul(f, 90)) : add(sim.pos, mul(f, 18));
-    viewFov = FOV * (sim.boost ? 1.08 : sim.brake ? 0.95 : 1);
-    vp = mm(persp(viewFov, canvas.width / canvas.height, 0.35, 16000), lookAt(camEye, target, up));
+    if (sim.mode !== 'sub' && camEye[1] < 1.5) camEye[1] = 1.5;
+    viewFov = FOV * (sim.mode === 'gunship' ? 0.86 : sim.boost ? 1.08 : sim.brake ? 0.95 : 1);
+    vp = mm(persp(viewFov, canvas.width / canvas.height, 0.35, 16000), lookAt(camEye, target, sim.mode === 'gunship' || sim.mode === 'foot' ? [0, 1, 0] : up));
     g.uniform3f(loc.cam, camEye[0], camEye[1], camEye[2]);
     g.uniform3f(loc.light, 0.35, 0.72, 0.22);
     g.uniform1f(loc.time, time);
-    g.uniform3f(loc.fog, 0.78, 0.58, 0.42);
-    g.clearColor(0.55, 0.4, 0.28, 1);
+    if (sim.mode === 'sub' && sim.pos[1] < 5) {
+      g.uniform3f(loc.fog, 0.03, 0.1, 0.14);
+      g.clearColor(0.02, 0.06, 0.1, 1);
+    } else {
+      g.uniform3f(loc.fog, 0.78, 0.58, 0.42);
+      g.clearColor(0.55, 0.4, 0.28, 1);
+    }
     g.clear(g.COLOR_BUFFER_BIT | g.DEPTH_BUFFER_BIT);
     g.enable(g.DEPTH_TEST);
     g.enable(g.BLEND);
@@ -1270,19 +1668,40 @@ function bootTidebreaker() {
     for (let i = 0; i < E.length; i++) {
       const e = E[i];
       if (e.hp <= 0 && e.pos[1] < -8) continue;
-      if (e.kind === 'ship') draw(shipM, matQuat(quatAim([Math.sin(e.yaw), 0, -Math.cos(e.yaw)]), e.pos, 1.35), e.hp > 0 ? 1 : 0.85, 0);
-      else if (e.kind === 'depot' && e.hp > 0) draw(depotM, matQuat(quatAim([Math.sin(e.yaw), 0, -Math.cos(e.yaw)]), e.pos, 1), 1, 0);
+      const yaw = e.yaw || 0;
+      const face = quatAim([Math.sin(yaw), 0, -Math.cos(yaw)]);
+      if (e.kind === 'ship' || e.kind === 'friend') {
+        const sc = e.kind === 'friend' ? 3.3 : (e.r > 55 ? 2.05 : 1.35);
+        draw(shipM, matQuat(face, e.pos, sc), e.hp > 0 ? 1 : 0.85, 0, e.kind === 'friend' ? [0.62, 0.66, 0.7] : [1, 1, 1]);
+      } else if (e.kind === 'boat' && e.hp > 0) draw(shipM, matQuat(face, e.pos, 0.36), 1, 0, [0.32, 0.28, 0.24]);
+      else if (e.kind === 'vampire' && e.hp > 0) draw(foxMesh, matQuat(quatAim(norm(sub(e.goal || [0, 0, 1], e.pos))), e.pos, 1.5), 1, 0, [1, 0.42, 0.12]);
+      else if ((e.kind === 'troop' || e.kind === 'pilot' || e.kind === 'civil') && e.hp > 0) {
+        const tint = e.kind === 'pilot' ? [0.95, 0.72, 0.32] : e.kind === 'civil' ? [0.78, 0.8, 0.84] : [0.62, 0.16, 0.12];
+        draw(personM, matQuat([0, 0, 0, 1], e.pos, e.kind === 'civil' ? 2.4 : 1.35), 1, 0, tint);
+      }
+      else if (e.kind === 'depot' && e.hp > 0) draw(depotM, matQuat(face, e.pos, 1), 1, 0);
       else if (e.kind === 'sam' && e.hp > 0) draw(samM, matQuat(quatAim([Math.sin(e.yaw), 0, -Math.cos(e.yaw)]), [e.pos[0], e.pos[1] + 1, e.pos[2]], 1), 1, 0);
       else if (e.kind === 'bandit' && e.hp > 0) {
-        useSkin(fastTex);
+        useSkin(texFast);
         draw(jetLance, matQuat(e.q, e.pos, 0.72), 1, 0, [0.95, 0.55, 0.48], 2);
       }
     }
-    const playerMesh = picked === 'lance' ? jetLance : picked === 'dart' ? jetDart : jet;
-    if (!cockpit && sim.alive) {
-      useSkin(picked === 'strike' ? strikeTex : fastTex);
-      const skinTint = picked === 'dart' ? [0.42, 0.44, 0.48] : [1, 1, 1];
-      draw(playerMesh, matQuat(sim.q, sim.pos, 1), 1, 0, skinTint, 2);
+    const craftId = (JETS[picked] && JETS[picked].id) || 'a10';
+    let playerMesh = jet;
+    let skinTint = [1, 1, 1];
+    let skin = texStrike;
+    let pScale = 1;
+    if (craftId === 'f22') { playerMesh = jetDart; skinTint = [0.32, 0.36, 0.4]; skin = texFast; }
+    else if (craftId === 'f35') { playerMesh = jetLance; skinTint = [0.62, 0.66, 0.62]; skin = texFast; }
+    else if (craftId === 'b2') { playerMesh = wingM; skinTint = [0.16, 0.17, 0.18]; skin = texFast; pScale = 1.7; }
+    if (sim.alive && sim.mode === 'helo') {
+      const little = craftId === 'mh6';
+      draw(heloM, matQuat(sim.q, sim.pos, little ? 0.58 : 1.2), 1, 0, little ? [0.18, 0.19, 0.2] : [0.72, 0.78, 0.55]);
+    } else if (sim.alive && sim.mode === 'sub') {
+      draw(subM, matQuat(sim.q, sim.pos, 1.55), 1, 0, [0.35, 0.48, 0.52]);
+    } else if (!cockpit && sim.alive && sim.mode === 'jet') {
+      useSkin(skin);
+      draw(playerMesh, matQuat(sim.q, sim.pos, pScale), 1, 0, skinTint, 2);
     }
     if (sim.brake && sim.alive && !cockpit) {
       const left = add(add(sim.pos, mul(b.r, -3.1)), add(mul(up, 0.85), mul(f, -0.3)));
@@ -1350,15 +1769,33 @@ function bootTidebreaker() {
     o.connect(gn); gn.connect(actx.destination);
     o.start(); o.stop(actx.currentTime + dur);
   }
-  function start() {
-    document.querySelector('#boot').style.display = 'none';
+  function beginSortie() {
+    const boot = document.querySelector('#boot');
+    if (boot) boot.style.display = 'none';
     $('game').hidden = false;
+    $('game').classList.add('live');
     resetMission();
     running=true;
     ended = false;
-    ensureAudio();
     if (!looping) { looping = true; last = performance.now(); requestAnimationFrame(loop); }
     $('endcard').hidden = true;
+    try { ensureAudio(); } catch (err) { showDiag(err.message || 'audio unavailable'); }
+  }
+  function start() {
+    const m = currentOp();
+    const cine = $('cine');
+    if (m.art && cine && $('cineImg')) {
+      cine.hidden = false;
+      $('cineImg').src = m.art;
+      if ($('cineKicker')) $('cineKicker').textContent = 'MISSION ' + m.no;
+      if ($('cineTitle')) $('cineTitle').textContent = m.name;
+      if ($('cineLines')) $('cineLines').textContent = (m.lines || []).join(' ');
+      const go = () => { cine.hidden = true; beginSortie(); };
+      if ($('cineGo')) $('cineGo').onclick = go;
+      if ($('cineSkip')) $('cineSkip').onclick = go;
+      return;
+    }
+    beginSortie();
   }
   document.querySelector('#fly').onclick=start;
   $('refly').onclick = () => { resetMission(); running = true; ended = false; $('endcard').hidden = true; };
@@ -1388,10 +1825,17 @@ function bootTidebreaker() {
     level: () => { sim.q = [0, 0, 0, 1]; sim.vel = [0, 0, -Math.max(150, hypot3(sim.vel))]; camEye = add(sim.pos, [0, 8, 30]); },
     player: () => ({ hp: sim.hp, ammo: sim.ammo, missiles: sim.missiles, pos: sim.pos.slice(), alive: sim.alive, speed: hypot3(sim.vel) }),
     targets: () => E.map((e) => ({ name: e.name, hp: e.hp, kind: e.kind, primary: e.primary, pos: e.pos.slice() })),
-    fire, missile
+    fire, missile,
+    loseContext: () => {
+      if (!loseExt) return 'unsupported';
+      loseExt.loseContext();
+      setTimeout(() => loseExt.restoreContext(), 350);
+      return 'cycling';
+    }
   };
-  $('airframe').textContent = 'TB-10 STRIKE  ·  ' + AIRFRAME + ' PLANFORM';
+  $('airframe').textContent = 'A-10C THUNDERBOLT II';
   $('theater').textContent = THEATER + '  ·  ' + ISLAND_NAME.toUpperCase();
+  if (bootStatus) bootStatus.textContent = 'READY — CHOOSE AN AIRFRAME';
 }
 
 bootTidebreaker();

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#1a120c">
   <title>Operation Tidebreaker</title>
-  <link rel="stylesheet" href="./src/style.css?v=rebuild6">
+  <link rel="stylesheet" href="./src/style.css?v=rebuild8">
 </head>
 <body>
   <div id="diag" class="diag" hidden>FLIGHT SYSTEMS</div>
@@ -13,12 +13,25 @@
     <div id="start" class="boot-copy">
       <p class="eyebrow" id="theater">GULF THEATER · KHARG ISLAND</p>
       <h1>OPERATION<br><span>TIDEBREAKER</span></h1>
-      <p class="brief">First light over Kharg island. Pick an airframe, then sink both raiders and the fuel farm. The TB-10 is an A-10C Thunderbolt II planform study: straight wing, twin tails, nose cannon.</p>
+      <p class="brief">Pick a sortie, then an airframe. Geometry is original — the names are the real aircraft the planforms are studied from.</p>
+      <div class="hangar" id="ops">
+        <p class="eyebrow">CHOOSE SORTIE</p>
+        <button type="button" class="jet on" data-op="light"><b>01 FIRST LIGHT</b><span>Strike. Raiders and the fuel farm.</span></button>
+        <button type="button" class="jet" data-op="angel"><b>02 ANGEL LIFT</b><span>AH-64 or Little Bird. Recover the pilot on foot.</span></button>
+        <button type="button" class="jet" data-op="strait"><b>03 IRON GATE</b><span>Defend the carrier. Splash the cruise missiles.</span></button>
+        <button type="button" class="jet" data-op="skimmer"><b>04 SKIMMER</b><span>Sink the fast craft.</span></button>
+        <button type="button" class="jet" data-op="keel"><b>05 BLACK KEEL</b><span>Submarine. Torpedo the raider capital.</span></button>
+        <button type="button" class="jet" data-op="specter"><b>06 HARBOR LIGHT</b><span>AC-130. Stop regime security on the docks.</span></button>
+      </div>
       <div class="hangar" id="hangar">
         <p class="eyebrow">CHOOSE AIRFRAME</p>
-        <button type="button" class="jet on" data-jet="strike"><b>TB-10 STRIKE</b><span>Heavy attacker. Stable gun, tough, short burner.</span></button>
-        <button type="button" class="jet" data-jet="lance"><b>TB-4 LANCE</b><span>Light fighter. Fast lock, six fox-2s, snappy roll.</span></button>
-        <button type="button" class="jet" data-jet="dart"><b>TB-7 DART</b><span>Interceptor. Long afterburner, thin wing, top speed.</span></button>
+        <button type="button" class="jet on" data-jet="a10"><b>A-10C THUNDERBOLT II</b><span>Warthog. Stable gun, tough, short burner.</span></button>
+        <button type="button" class="jet" data-jet="f22"><b>F-22 RAPTOR</b><span>Fast lock, snappy roll, long afterburner.</span></button>
+        <button type="button" class="jet" data-jet="f35"><b>F-35 LIGHTNING II</b><span>Multirole. Six fox-2s, quick nose.</span></button>
+        <button type="button" class="jet" data-jet="b2"><b>B-2 SPIRIT</b><span>Flying wing. Heavy missile load, slow roll.</span></button>
+        <button type="button" class="jet" data-jet="apache"><b>AH-64 APACHE</b><span>Attack helicopter. Space climbs, R hoists.</span></button>
+        <button type="button" class="jet" data-jet="mh6"><b>MH-6 LITTLE BIRD</b><span>Light scout. Faster, fragile.</span></button>
+        <button type="button" class="jet" data-jet="ac130"><b>AC-130 SUPER HERCULES</b><span>Orbiting side cannon.</span></button>
       </div>
       <button id="fly" type="button">START MISSION</button>
       <ul class="keys">
@@ -31,6 +44,7 @@
         <li><b>F / click</b> cannon</li>
         <li><b>R</b> fox-2 · <b>T</b> next target</li>
       </ul>
+      <p id="bootStatus" class="legal">BRINGING FLIGHT COMPUTER ONLINE…</p>
       <p class="legal">Original geometry and audio. No licensed game assets.</p>
     </div>
     <svg class="silhouette" viewBox="0 0 640 280" aria-hidden="true">
@@ -40,7 +54,7 @@
       <circle cx="300" cy="132" r="8" fill="#c9843a"/>
     </svg>
   </div>
-  <div id="game" hidden>
+  <div id="game">
     <canvas id="view"></canvas>
     <canvas id="ladder"></canvas>
     <div id="hurt"></div>
@@ -66,10 +80,10 @@
         <small>AOA <b id="aoa">0</b>°</small>
       </div>
       <div class="weapon">
-        <small>CANNON</small>
+        <small id="wepName">CANNON</small>
         <b id="ammo">420</b>
         <span id="weapon">READY</span>
-        <small>FOX-2 <b id="missileCount">4</b></small>
+        <small><span id="foxName">FOX-2</span> <b id="missileCount">4</b></small>
         <small>THR <b id="thr">62</b></small>
         <small id="prop">MIL POWER</small>
         <div id="abBar" class="ab"><i id="abFill"></i></div>
@@ -77,7 +91,7 @@
       <div class="radar"><span>RDR</span><canvas id="radar"></canvas></div>
       <div class="damage"><span id="damageBar"></span></div>
       <div class="comms" id="comms">AWACS // STAND BY</div>
-      <p class="hint">W PULL · S NOSE DOWN · A BANK LEFT · D BANK RIGHT · SPACE BURNER · SHIFT BRAKE · F GUN · R FOX-2 · T NEXT</p>
+      <p class="hint" id="hint">W PULL · S NOSE DOWN · A BANK LEFT · D BANK RIGHT · SPACE BURNER · SHIFT BRAKE · F GUN · R FOX-2 · T NEXT</p>
       <div id="stick" class="stick"><i id="nub"></i></div>
       <div id="look" class="mobile-look">RUDDER</div>
       <button id="burn" class="touch-btn burn" type="button">AB</button>
@@ -92,6 +106,59 @@
       <button id="refly" type="button">REFLY</button>
     </div>
   </div>
-  <script src="./src/main.js?v=rebuild6"></script>
+  <div id="cine" class="cine" hidden>
+    <img id="cineImg" alt="">
+    <div class="cine-shade"></div>
+    <div class="cine-copy">
+      <p class="eyebrow" id="cineKicker">MISSION</p>
+      <h2 id="cineTitle">FIRST LIGHT</h2>
+      <p id="cineLines"></p>
+      <button id="cineGo" type="button">LAUNCH</button>
+      <button id="cineSkip" type="button">SKIP</button>
+    </div>
+  </div>
+  <script>
+  (function () {
+    var boot = document.getElementById('bootStatus');
+    if (boot) boot.textContent = 'BRINGING FLIGHT COMPUTER ONLINE…';
+    if (window.parent === window) return;
+    function grokOrigin(origin) {
+      try {
+        var url = new URL(origin);
+        var host = url.hostname.toLowerCase();
+        if (url.protocol !== 'https:' && url.protocol !== 'http:') return false;
+        if (host === 'grok.com' || host.slice(-9) === '.grok.com') return true;
+        if (host === 'localhost' || host === '127.0.0.1' || host === '[::1]') return true;
+        return false;
+      } catch (e) { return false; }
+    }
+    var referrer = document.referrer || '';
+    var ancestor = (location.ancestorOrigins && location.ancestorOrigins.length) ? location.ancestorOrigins[0] : '';
+    var origin = null;
+    [referrer, ancestor].forEach(function (candidate) {
+      if (origin || !candidate) return;
+      try {
+        var url = new URL(candidate.indexOf('://') >= 0 ? candidate : ('https://' + candidate));
+        if (grokOrigin(url.origin)) origin = url.origin;
+      } catch (e) {}
+    });
+    if (!origin) return;
+    var channel = 'grok-preview-bridge';
+    function post(message) { try { window.parent.postMessage(message, origin); } catch (e) {} }
+    function announce() {
+      post({ channel: channel, version: 1, type: 'location', path: location.pathname || '/', search: location.search, hash: location.hash });
+      post({ channel: channel, version: 1, type: 'routes', paths: ['/'] });
+      post({ channel: channel, version: 1, type: 'ready' });
+    }
+    window.addEventListener('message', function (event) {
+      if (event.source !== window.parent || event.origin !== origin) return;
+      var data = event.data;
+      if (!data || data.channel !== channel || data.version !== 1) return;
+      if (data.type === 'hello') announce();
+    });
+    announce();
+  })();
+  </script>
+  <script src="./src/main.js?v=rebuild8" onerror="var s=document.getElementById('bootStatus');if(s)s.textContent='FLIGHT COMPUTER FAILED TO LOAD — REFRESH'"></script>
 </body>
 </html>
