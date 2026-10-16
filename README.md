@@ -36,6 +36,7 @@ Sorties 2–6 open on a still card. Skip or start from that card.
 Chase camera. A banks or yaws **left**. D banks or yaws **right**.
 
 - Jet: W / S pitch, A / D bank, Q / E rudder, arrows throttle, Space afterburner, Shift or X airbrake, T next target, F cannon, R fox-2, C cockpit
+- Winchester: slow down south of the island, or near the carrier, and the jet rearms. Missiles lead the target and detonate on a near miss.
 - Helicopter: Space climb, Shift descend, R dismount / hoist (not a missile)
 - On foot: WASD, mouse look, R hoist
 - Gunship: auto orbit, A / D slew aim, W / S range, F side cannon

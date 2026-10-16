@@ -6,10 +6,10 @@ const AIRFRAME = 'A-10C THUNDERBOLT II';
 const THEATER = 'GULF THEATER';
 const ISLAND_NAME = 'Kharg island';
 const JETS = {
-  a10: { id: 'a10', name: 'A-10C THUNDERBOLT II', role: 'jet', roll: 1.7, pitch: 0.82, yaw: 0.72, thrust: 1, burner: 1.4, drag: 1.05, vmax: 355, cruise: 162, hp: 140, ammo: 780, missiles: 4, lock: 0.1, cone: 0.52 },
-  f22: { id: 'f22', name: 'F-22 RAPTOR', role: 'jet', roll: 3.15, pitch: 1.38, yaw: 1.05, thrust: 1.22, burner: 2.25, drag: 0.76, vmax: 530, cruise: 214, hp: 76, ammo: 260, missiles: 6, lock: 0.05, cone: 0.68 },
-  f35: { id: 'f35', name: 'F-35 LIGHTNING II', role: 'jet', roll: 2.45, pitch: 1.12, yaw: 0.92, thrust: 1.12, burner: 1.9, drag: 0.84, vmax: 460, cruise: 198, hp: 94, ammo: 340, missiles: 6, lock: 0.055, cone: 0.62 },
-  b2: { id: 'b2', name: 'B-2 SPIRIT', role: 'jet', roll: 0.78, pitch: 0.5, yaw: 0.38, thrust: 0.92, burner: 1.2, drag: 0.68, vmax: 275, cruise: 178, hp: 170, ammo: 0, missiles: 12, lock: 0.08, cone: 0.42 },
+  a10: { id: 'a10', name: 'A-10C THUNDERBOLT II', role: 'jet', roll: 1.7, pitch: 0.82, yaw: 0.72, thrust: 1, burner: 1.4, drag: 1.05, vmax: 355, cruise: 162, hp: 140, ammo: 1100, missiles: 8, lock: 0.1, cone: 0.62 },
+  f22: { id: 'f22', name: 'F-22 RAPTOR', role: 'jet', roll: 3.15, pitch: 1.38, yaw: 1.05, thrust: 1.22, burner: 2.25, drag: 0.76, vmax: 530, cruise: 214, hp: 76, ammo: 520, missiles: 8, lock: 0.05, cone: 0.74 },
+  f35: { id: 'f35', name: 'F-35 LIGHTNING II', role: 'jet', roll: 2.45, pitch: 1.12, yaw: 0.92, thrust: 1.12, burner: 1.9, drag: 0.84, vmax: 460, cruise: 198, hp: 94, ammo: 640, missiles: 8, lock: 0.055, cone: 0.7 },
+  b2: { id: 'b2', name: 'B-2 SPIRIT', role: 'jet', roll: 0.78, pitch: 0.5, yaw: 0.38, thrust: 0.92, burner: 1.2, drag: 0.68, vmax: 275, cruise: 178, hp: 170, ammo: 0, missiles: 16, lock: 0.08, cone: 0.55 },
   apache: { id: 'apache', name: 'AH-64 APACHE', role: 'helo', roll: 1.1, pitch: 0.7, yaw: 1.2, thrust: 1, burner: 1, drag: 1, vmax: 70, cruise: 28, hp: 110, ammo: 420, missiles: 8, lock: 0.09, cone: 0.55 },
   mh6: { id: 'mh6', name: 'MH-6 LITTLE BIRD', role: 'helo', roll: 1.6, pitch: 0.9, yaw: 1.55, thrust: 1.1, burner: 1, drag: 0.8, vmax: 84, cruise: 36, hp: 64, ammo: 220, missiles: 4, lock: 0.07, cone: 0.6 },
   ac130: { id: 'ac130', name: 'AC-130 SUPER HERCULES', role: 'gunship', roll: 0.6, pitch: 0.4, yaw: 0.3, thrust: 1, burner: 1, drag: 1, vmax: 160, cruise: 120, hp: 160, ammo: 1100, missiles: 0, lock: 0.04, cone: 0.9 }
@@ -183,8 +183,8 @@ function buildWing(dst) {
 }
 
 const MISSIONS = [
-  { id: 'light', no: '01', name: 'FIRST LIGHT', mode: 'jet', objective: 'SINK THE RAIDERS AND THE FUEL FARM', art: '', brief: 'First light over Kharg island. Pick an airframe, then sink both raiders and the fuel farm. The TB-10 is an A-10C Thunderbolt II planform study: straight wing, twin tails, nose cannon.', lines: [], hint: 'W PULL · S NOSE DOWN · A BANK LEFT · D BANK RIGHT · SPACE BURNER · SHIFT BRAKE · F GUN · R FOX-2 · T NEXT', spawn: [0, 128, 390], vel: [0, 0, -166], wep: 'CANNON', fox: 'FOX-2', ammo: 0, missiles: 0 },
-  { id: 'angel', no: '02', name: 'ANGEL LIFT', mode: 'helo', objective: 'RECOVER THE DOWNED PILOT', art: './assets/cine-angel.jpg', brief: 'A fighter is down on the north beach. Fly the TB-6 lifter, set down with F, then walk the pilot back to the landing zone. A yaws left.', lines: ['A fighter is down on the north beach.', 'TB-6 lifter. Space climbs. Shift descends. A yaws left.', 'Set down, press F, and walk the pilot back to the zone.'], hint: 'W FORWARD · S BACK · A YAW LEFT · D YAW RIGHT · SPACE UP · SHIFT DOWN · F GUN · R DISMOUNT / HOIST', spawn: [240, 72, 280], vel: [0, 0, -22], lz: [240, 0, 230], wep: 'DOOR GUN', fox: 'HOIST', ammo: 360, missiles: 0 },
+  { id: 'light', no: '01', name: 'FIRST LIGHT', mode: 'jet', objective: 'SINK THE RAIDERS AND THE FUEL FARM', art: '', brief: 'First light over Kharg island. Pick an airframe, then sink both raiders and the fuel farm. Slow down south of the island if you go Winchester — the tanker fills guns and missiles.', lines: [], hint: 'W PULL · A BANK LEFT · D BANK RIGHT · F GUN · R FOX-2 · T NEXT · SLOW SOUTH OF THE ISLAND TO REARM', spawn: [0, 128, 390], vel: [0, 0, -166], wep: 'CANNON', fox: 'FOX-2', ammo: 0, missiles: 0 },
+  { id: 'angel', no: '02', name: 'ANGEL LIFT', mode: 'helo', objective: 'RECOVER THE DOWNED PILOT', art: './assets/cine-angel.jpg', brief: 'A fighter is down on the north beach. Fly the lifter in low, then press R to step out beside the pilot. R again hoists. Missiles still fire if you are not in position to land.', lines: ['A fighter is down on the north beach.', 'Get low and close, then press R to step out beside them.', 'R again hoists. Away from the beach, R is a missile.'], hint: 'W FORWARD · A YAW LEFT · D YAW RIGHT · SPACE UP · SHIFT DOWN · F GUN · R LAND / HOIST OR MISSILE', spawn: [240, 72, 280], vel: [0, 0, -22], lz: [240, 0, 230], wep: 'DOOR GUN', fox: 'HOIST', ammo: 360, missiles: 0 },
   { id: 'strait', no: '03', name: 'IRON GATE', mode: 'jet', objective: 'STOP THE STRAIT RAID', art: './assets/cine-strait.jpg', brief: 'Hold the strait. Incoming cruise missiles and a raid jet are running on the carrier. Splash the vampires. The deck guns are already up.', lines: ['The strait is open and the carrier is in the lane.', 'Cruise missiles are inbound. Splash them.', 'Deck guns are firing. You are the intercept.'], hint: 'W PULL · A BANK LEFT · D BANK RIGHT · F GUN · R FOX-2 · T NEXT · KEEP THE CARRIER ALIVE', spawn: [-40, 160, 200], vel: [0, 0, -180], integrity: 3, wep: 'CANNON', fox: 'FOX-2', ammo: 700, missiles: 6 },
   { id: 'skimmer', no: '04', name: 'SKIMMER', mode: 'jet', objective: 'SINK THE FAST CRAFT', art: './assets/cine-skimmer.jpg', brief: 'Six fast craft are cutting across the gulf. Get low, lead the guns, and do not chase one boat off the map.', lines: ['Six fast craft, white wakes, no formation.', 'Get low. Lead them with the cannon.', 'Missiles are for the ones that break wide.'], hint: 'A BANK LEFT · D BANK RIGHT · F GUN · R FOX-2 · STAY LOW OVER THE WATER', spawn: [0, 90, 480], vel: [0, 0, -170], wep: 'CANNON', fox: 'FOX-2', ammo: 640, missiles: 6 },
   { id: 'keel', no: '05', name: 'BLACK KEEL', mode: 'sub', objective: 'TORPEDO THE RAIDER CAPITAL', art: './assets/cine-keel.jpg', brief: 'Periscope depth. The raider capital and two escorts are north of the island. A turns left. W rises. R launches a torpedo once you have lock.', lines: ['Periscope depth, north of Kharg.', 'One capital ship, two escorts.', 'A turns left. W rises toward the scope. R is the torpedo.'], hint: 'A TURN LEFT · D TURN RIGHT · W RISE · S DIVE · R TORPEDO · T NEXT', spawn: [0, 3, 360], vel: [0, 0, -20], wep: 'SCOPE', fox: 'TORPEDO', ammo: 40, missiles: 6 },
@@ -355,14 +355,14 @@ function stepFlight(sim, cmd, dt) {
   const floor = gy < 0.4 ? 2.2 : gy + 3.4;
   if (sim.pos[1] < floor) {
     const drop = -sim.vel[1];
-    sim.pos[1] = floor;
-    if (gy < 0.4 || drop > 22) {
+    sim.pos[1] = floor + 0.4;
+    if (drop > 42) {
       sim.hp = 0;
       sim.alive = false;
       sim.vel = [0, 0, 0];
     } else {
-      sim.vel[1] = Math.max(0, sim.vel[1]);
-      sim.hp = Math.max(0, sim.hp - drop * 0.4);
+      sim.vel[1] = Math.max(10, drop * 0.25);
+      sim.hp = Math.max(0, sim.hp - (drop > 16 ? 18 : 6));
       if (sim.hp <= 0) sim.alive = false;
     }
   }
@@ -1058,7 +1058,11 @@ function bootTidebreaker() {
     sim.missiles = flying ? (m.missiles || j.missiles) : (m.missiles != null && m.mode !== 'jet' ? m.missiles : j.missiles);
     if (sim.mode === 'helo') { sim.ammo = j.ammo; sim.missiles = j.missiles; sim.hp = j.hp; sim.maxHp = j.hp; }
     if (sim.mode === 'gunship') { sim.ammo = j.ammo; sim.missiles = 0; sim.hp = j.hp; sim.maxHp = j.hp; }
-    if (sim.mode === 'sub') { sim.ammo = 0; sim.missiles = 6; sim.hp = 100; sim.maxHp = 100; }
+    if (sim.mode === 'sub') { sim.ammo = 0; sim.missiles = 8; sim.hp = 100; sim.maxHp = 100; }
+    sim.maxAmmo = sim.ammo;
+    sim.maxMissiles = sim.missiles;
+    sim.rearmT = 0;
+    sim.toldDry = 0;
     sim.abFuel = 1;
     sim.brake = 0;
     sim.boost = 0;
@@ -1138,35 +1142,55 @@ function bootTidebreaker() {
     burst(aim, [0.2, 0.2, 0.18], 6, 8);
     for (let i = 0; i < E.length; i++) {
       const e = E[i];
-      if (e.hp > 0 && e.kind !== 'friend' && e.kind !== 'civil' && hypot3(sub(e.pos, aim)) < (e.r || 8) + 18) damageTarget(e, 18);
+      if (e.hp > 0 && hostile(e) && hypot3(sub(e.pos, aim)) < (e.r || 8) + 34) damageTarget(e, 26);
     }
     blip(70, 0.08, 'square', 0.05);
     flash = Math.max(flash, 0.2);
   }
+  function hostile(e) {
+    return !!(e && e.hp > 0 && e.kind !== 'friend' && e.kind !== 'civil' && e.kind !== 'pilot');
+  }
+  function targetVel(e) {
+    if (!e) return [0, 0, 0];
+    if (e.kind === 'boat') {
+      const yaw = e.yaw || 0;
+      const sp = e.speed || 28;
+      return [Math.sin(yaw) * sp, 0, -Math.cos(yaw) * sp];
+    }
+    if (e.kind === 'vampire') return mul(norm(sub(e.goal || [0, 18, 0], e.pos)), e.speed || 100);
+    if (e.kind === 'bandit') return mul(norm(sub(sim.pos, e.pos)), e.speed || 140);
+    if (e.kind === 'troop') return mul(norm(sub(e.goal || e.pos, e.pos)), e.speed || 10);
+    return [0, 0, 0];
+  }
+  function hoistReady() {
+    const pilot = E.filter((e) => e.kind === 'pilot' && e.hp > 0)[0];
+    if (!pilot) return false;
+    const alt = sim.pos[1] - groundY(sim.pos[0], sim.pos[2]);
+    return hypot3(sub(pilot.pos, sim.pos)) < 48 && alt < 22;
+  }
   function interact() {
     if (sim.mode === 'helo') {
       const pilot = E.filter((e) => e.kind === 'pilot' && e.hp > 0)[0];
-      if (!pilot) return;
-      const alt = sim.pos[1] - groundY(sim.pos[0], sim.pos[2]);
-      if (hypot3(sub(pilot.pos, sim.pos)) < 36 && alt < 16) {
-        sim.mode = 'foot';
-        sim.pos = [sim.lz[0], groundY(sim.lz[0], sim.lz[2]) + 1.7, sim.lz[2]];
-        sim.q = quatAim(norm(sub(pilot.pos, sim.pos)));
-        say('BOOTS DOWN — WALK TO THE PILOT. R TO HOIST. A STRAFES LEFT.');
-      } else say('AWACS // SET DOWN CLOSER');
+      if (!pilot || !hoistReady()) return;
+      const gy = groundY(sim.pos[0], sim.pos[2]);
+      sim.mode = 'foot';
+      sim.pos = [sim.pos[0], gy < 0.3 ? 1.6 : gy + 1.7, sim.pos[2]];
+      sim.lz = sim.pos.slice();
+      sim.q = quatAim(norm(sub(pilot.pos, sim.pos)));
+      say('BOOTS DOWN — R HOISTS THE PILOT. A STRAFES LEFT.');
       return;
     }
     if (sim.mode === 'foot') {
       const pilot = E.filter((e) => e.kind === 'pilot')[0];
-      if (pilot && pilot.hp > 0 && hypot3(sub(pilot.pos, sim.pos)) < 8) {
+      if (pilot && pilot.hp > 0 && hypot3(sub(pilot.pos, sim.pos)) < 10) {
         pilot.hp = 0;
         pilot.primary = false;
         sim.rescued = 1;
         say('PILOT WITH YOU — WALK BACK TO THE LIFTER AND PRESS R');
         return;
       }
-      if (sim.rescued && hypot3(sub(sim.lz, sim.pos)) < 12) finish(true, 'PILOT RECOVERED');
-      else say(sim.rescued ? 'AWACS // BACK TO THE LANDING ZONE' : 'AWACS // CLOSER TO THE PILOT');
+      if (sim.rescued && hypot3(sub(sim.lz, sim.pos)) < 14) finish(true, 'PILOT RECOVERED');
+      else say(sim.rescued ? 'AWACS // BACK TO THE LIFTER' : 'AWACS // CLOSER TO THE PILOT');
     }
   }
   function fire() {
@@ -1175,26 +1199,40 @@ function bootTidebreaker() {
     if (sim.mode === 'gunship') return fireOrbit();
     if (sim.ammo <= 0) return;
     sim.ammo--;
-    sim.gunCd = 0.045;
+    sim.gunCd = sim.mode === 'helo' ? 0.07 : 0.06;
     const b = basis(sim.q);
     const muzzle = add(add(sim.pos, mul(b.f, 9.2)), mul(b.u, -0.75));
-    const spread = [(Math.random() - 0.5) * 0.012, (Math.random() - 0.5) * 0.012, (Math.random() - 0.5) * 0.012];
+    const spread = [(Math.random() - 0.5) * 0.01, (Math.random() - 0.5) * 0.01, (Math.random() - 0.5) * 0.01];
     const dir = norm(add(b.f, spread));
-    const v = add(mul(dir, 860), sim.vel);
-    shots.push({ p: muzzle.slice(), prev: muzzle.slice(), v, life: 1.15, owner: 'player', dmg: 9, rad: 2.2 });
+    const v = add(mul(dir, 1040), mul(sim.vel, 0.35));
+    shots.push({ p: muzzle.slice(), prev: muzzle.slice(), v, life: 2.4, owner: 'player', dmg: 16, rad: 2.2 });
     if (sim.ammo % 4 === 0) burst(muzzle, [1, 0.75, 0.3], 1, 4);
     blip(180, 0.03, 'square', 0.03);
   }
   function missile() {
     if (!running || ended || !sim.alive || sim.missiles <= 0 || sim.misCd > 0) return;
-    const tgt = locked();
-    if (!tgt) { say(lockP > 0.05 ? 'AWACS // STILL LOCKING' : 'AWACS // NO LOCK'); return; }
+    if (sim.mode === 'gunship' || sim.mode === 'foot') return;
+    const soft = lockP >= 0.42 && lockT && lockT.hp > 0 ? lockT : null;
+    const tgt = locked() || soft || (designated && designated.hp > 0 ? designated : null);
+    if (!tgt || !hostile(tgt)) { say(lockP > 0.05 ? 'AWACS // STILL LOCKING' : 'AWACS // NO LOCK'); return; }
     sim.missiles--;
-    sim.misCd = 0.45;
+    sim.misCd = 0.32;
+    const subMode = sim.mode === 'sub';
     const b = basis(sim.q);
-    const p = add(sim.pos, mul(b.f, 6));
-    ms.push({ p: p.slice(), v: add(mul(b.f, 220), sim.vel), life: 4.2, tgt, smoke: 0 });
-    say('AWACS // ' + (sim.mode === 'sub' ? 'TORPEDO' : 'FOX-2') + ' — ' + tgt.name);
+    const p = add(sim.pos, mul(b.f, subMode ? 10 : 7));
+    const spd = subMode ? 42 : Math.max(320, hypot3(sim.vel) + 160);
+    ms.push({
+      p: p.slice(),
+      v: mul(b.f, spd),
+      life: subMode ? 16 : 8.5,
+      tgt,
+      smoke: 0,
+      speed: spd,
+      sub: subMode ? 1 : 0,
+      prox: subMode ? 28 : 18,
+      dmg: subMode ? 150 : 120
+    });
+    say('AWACS // ' + (subMode ? 'TORPEDO' : 'FOX-2') + ' — ' + tgt.name);
     blip(520, 0.18, 'sawtooth', 0.04);
   }
   function angleTo(e) {
@@ -1209,12 +1247,13 @@ function bootTidebreaker() {
     let best = null, score = 1e9;
     for (let i = 0; i < E.length; i++) {
       const e = E[i];
-      if (e.hp <= 0) continue;
+      if (!hostile(e)) continue;
       const a = angleTo(e);
-      if (a.dist < 36 || a.dist > 3600) continue;
+      if (a.dist < 28 || a.dist > 5200) continue;
       const wide = e === designated ? cone * 1.85 : cone;
       if (a.ang > wide) continue;
       let s = a.ang * 6 + a.dist * 0.0002;
+      if (e.primary) s -= 0.35;
       if (e === lockT) s -= 0.45;
       if (e === designated) s -= 0.9;
       if (s < score) { score = s; best = e; }
@@ -1245,7 +1284,7 @@ function bootTidebreaker() {
   }
   function cycleLock() {
     const live = [];
-    for (let i = 0; i < E.length; i++) if (E[i].hp > 0) live.push(E[i]);
+    for (let i = 0; i < E.length; i++) if (hostile(E[i])) live.push(E[i]);
     if (!live.length) return;
     let i = live.indexOf(designated || lockT);
     designated = live[(i + 1) % live.length];
@@ -1317,10 +1356,45 @@ function bootTidebreaker() {
     if ((trigger || keys.has('KeyF') || gpGun) && sim.alive && !ended) fire();
     const misDown = missileBtn || keys.has('KeyR') || gpMis;
     if (misDown && !misPrev) {
-      if (sim.mode === 'helo' || sim.mode === 'foot') interact();
+      if (sim.mode === 'foot' || (sim.mode === 'helo' && hoistReady())) interact();
+      else if (sim.mode === 'helo' && sim.pos[1] - groundY(sim.pos[0], sim.pos[2]) < 28) say('AWACS // CLOSER TO THE PILOT, THEN R');
       else missile();
     }
     misPrev = misDown;
+    if (sim.alive && !ended) {
+      if (sim.mode === 'gunship') {
+        const firing = (trigger || keys.has('KeyF') || gpGun) && sim.ammo > 0;
+        if (!firing && sim.ammo < (sim.maxAmmo || sim.ammo)) sim.ammo = Math.min(sim.maxAmmo, sim.ammo + 140 * dt);
+      } else if (sim.mode !== 'foot') {
+        let pad = sim.mode === 'sub' ? [0, 2, 300] : [0, 20, 540];
+        let best = Math.hypot(sim.pos[0] - pad[0], sim.pos[2] - pad[2]);
+        for (let ri = 0; ri < E.length; ri++) {
+          const fr = E[ri];
+          if (fr.kind !== 'friend' || fr.hp <= 0) continue;
+          const fd = Math.hypot(sim.pos[0] - fr.pos[0], sim.pos[2] - fr.pos[2]);
+          if (fd < best) { best = fd; pad = fr.pos; }
+        }
+        const spd = hypot3(sim.vel);
+        const slow = sim.mode === 'sub' ? spd < 30 : sim.mode === 'helo' ? spd < 40 : spd < 150;
+        const low = sim.mode === 'sub' || sim.mode === 'helo' || sim.pos[1] < 260;
+        const need = sim.ammo + 1 < sim.maxAmmo || sim.missiles < sim.maxMissiles;
+        if (best < 210 && slow && low && need) {
+          sim.rearmT = (sim.rearmT || 0) + dt;
+          if (sim.rearmT > 0.2 && sim.rearmT < 0.45) say(sim.mode === 'sub' ? 'AWACS // RELOADING TUBES' : 'AWACS // REARMING — HOLD STEADY');
+          if (sim.rearmT >= 1.45) {
+            sim.ammo = sim.maxAmmo;
+            sim.missiles = sim.maxMissiles;
+            sim.rearmT = 0;
+            sim.toldDry = 0;
+            say('AWACS // WEAPONS GREEN');
+          }
+        } else sim.rearmT = 0;
+        if (sim.ammo <= 0 && sim.missiles <= 0 && primariesLeft() > 0 && !sim.toldDry) {
+          sim.toldDry = 1;
+          say(sim.mode === 'sub' ? 'AWACS // TUBES EMPTY — SLOW DOWN SOUTH OF THE ISLAND' : 'AWACS // WINCHESTER — SLOW DOWN SOUTH OF THE ISLAND TO REARM');
+        }
+      }
+    }
     const playerPos = sim.pos;
     for (let i = 0; i < E.length; i++) {
       const e = E[i];
@@ -1367,6 +1441,10 @@ function bootTidebreaker() {
         const dirb = [Math.sin(e.yaw), 0, -Math.cos(e.yaw)];
         e.pos = add(e.pos, mul(dirb, (e.speed || 28) * dt));
         e.pos[1] = 1.3;
+        if (Math.hypot(e.pos[0], e.pos[2]) > 1750) {
+          const inward = norm([-e.pos[0], 0, -e.pos[2]]);
+          e.yaw = Math.atan2(inward[0], -inward[2]);
+        }
       } else if (e.kind === 'vampire') {
         const dest = e.goal || [-180, 18, 640];
         const dirv = norm(sub(dest, e.pos));
@@ -1417,19 +1495,47 @@ function bootTidebreaker() {
     const lock = locked();
     for (let i = ms.length - 1; i >= 0; i--) {
       const m = ms[i];
-      const tgt = m.tgt && m.tgt.hp > 0 ? m.tgt : lock;
+      const tgt = m.tgt && hostile(m.tgt) ? m.tgt : (lock && hostile(lock) ? lock : null);
       if (tgt) {
-        const dir = norm(sub(tgt.pos, m.p));
-        const vm = hypot3(m.v) || 260;
-        m.v = mul(norm(add(mul(norm(m.v), 0.52), mul(dir, 0.48))), Math.min(540, vm + 150 * dt));
+        const dist = hypot3(sub(tgt.pos, m.p)) || 1;
+        const tgo = clamp(dist / Math.max(36, m.speed || 80), 0, 2.2);
+        const aim = add(tgt.pos, mul(targetVel(tgt), tgo * 0.9));
+        if (m.sub) aim[1] = 1.2;
+        const desired = norm(sub(aim, m.p));
+        const cur = hypot3(m.v) > 1 ? norm(m.v) : desired;
+        const ang = Math.acos(clamp(dot(cur, desired), -1, 1));
+        const maxStep = (m.sub ? 1.15 : 4.2) * dt;
+        const blend = ang < 0.001 ? 1 : Math.min(1, maxStep / ang);
+        const next = norm(add(mul(cur, 1 - blend), mul(desired, blend)));
+        m.speed = Math.min(m.sub ? 72 : 860, (m.speed || hypot3(m.v) || 80) + (m.sub ? 22 : 380) * dt);
+        m.v = mul(next, m.speed);
+        if (m.sub) { m.v[1] = 0; }
       }
       m.p = add(m.p, mul(m.v, dt));
+      if (m.sub) m.p[1] = 1.15;
       m.life -= dt;
       m.smoke -= dt;
-      if (m.smoke <= 0) { parts.push({ p: m.p.slice(), v: [0, 2, 0], life: 0.45, col: [0.75, 0.75, 0.75], s: 0.8 }); m.smoke = 0.03; }
-      let boom = m.life <= 0;
-      const tgt2 = m.tgt && m.tgt.hp > 0 ? m.tgt : null;
-      if (tgt2 && hypot3(sub(tgt2.pos, m.p)) < tgt2.r + 8) { damageTarget(tgt2, 58); burst(m.p, [1, 0.5, 0.15], 20, 24); boom = true; }
+      if (m.smoke <= 0) { parts.push({ p: m.p.slice(), v: [0, m.sub ? 0 : 2, 0], life: 0.45, col: m.sub ? [0.7, 0.85, 0.9] : [0.85, 0.82, 0.75], s: m.sub ? 1.1 : 0.8 }); m.smoke = 0.03; }
+      let struck = null;
+      let bestHit = 1e9;
+      for (let k = 0; k < E.length; k++) {
+        const e = E[k];
+        if (!hostile(e)) continue;
+        const d = hypot3(sub(e.pos, m.p));
+        const rad = Math.max(m.prox || 16, (e.r || 8) * 0.65);
+        if (d < rad && d < bestHit) { bestHit = d; struck = e; }
+      }
+      const boom = m.life <= 0 || !!struck;
+      if (struck) {
+        damageTarget(struck, m.dmg || 120);
+        for (let k = 0; k < E.length; k++) {
+          const e = E[k];
+          if (e === struck || !hostile(e)) continue;
+          if (hypot3(sub(e.pos, m.p)) < 36) damageTarget(e, Math.round((m.dmg || 120) * 0.35));
+        }
+        burst(m.p, [1, 0.45, 0.12], 28, 30);
+        burst(m.p, [0.95, 0.85, 0.45], 10, 16);
+      }
       if (boom) ms.splice(i, 1);
     }
     for (let i = parts.length - 1; i >= 0; i--) {
